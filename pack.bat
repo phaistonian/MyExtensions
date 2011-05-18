@@ -1,1 +1,0 @@
-chrome.exe --pack-extension=. --pack-extension-key=..\MyExtensions.pem
