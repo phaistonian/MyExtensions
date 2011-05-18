@@ -1,0 +1,37 @@
+{
+  "name"			      : "My Extensions",
+  "version"			    : "0.9.3.8",
+  "description"		  : "Are you an extensions developer? Keep track of your Chrome extensions. Be notified for new comments, ratings and more!",
+  "background_page" : "background.html",
+  "options_page"    : "options.html",
+  
+  
+  "browser_action"     : {
+    "default_icon"  : "icons/19.png",
+    "default_title" : "My Extensions",
+    "popup"         : "popup.html"
+  },
+  
+
+  "icons": {
+    "19": "icons/19.png",
+    "32": "icons/32.png",
+    "48": "icons/48.png"
+  },  
+  
+  "permissions": [
+    "tabs",
+    "bookmarks",
+    "notifications",
+    "https://chrome.google.com/extensions/search*",
+    "https://chrome.google.com/extensions/detail/*",
+    "http://chrome.google.com/*",
+    "https://chrome.google.com/*",
+    "https://chrome.google.com/*",
+    "http://chrome.dev.pathfinder.gr/*",
+    "http://chrome.pathfinder.gr/*",
+    "https://clients2.google.com/*"
+  ],
+  
+  "update_url": "http://clients2.google.com/service/update2/crx"
+}

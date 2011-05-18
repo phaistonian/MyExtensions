@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>Options - My Extensions</title>
+	<style type="text/css" media="all"><!-- @import url("css/css.css"); --></style>
+	<script type="text/javascript" src="js/core-lite.js"></script>
+	<script type="text/javascript" src="js/core.chrome.js"></script>
+	<script type="text/javascript" src="js/js.js"></script>
+	<script type="text/javascript">
+
+	</script>
+</head>
+
+<body onload="Ext.initialize()">
+
+<div id="wrapper">
+	
+	<div id="empty" style="display:none;"><h3>No extensions defined yet ;(</h3><p>Use the field below to add one, or click <strong>find your extensions</strong> to find them all easier.</p></div>
+	
+	<div id="table-container"><!-- extensions will be here --></div>
+	
+	
+	<div id="form">
+		<table cellspacing="0">
+			<thead>
+			<tr>
+				<th>Enter Extension ID:</th>
+				<td>
+					<input placeholder="Paste extension ID here" type="text" id="hash" style="width: 14em;" name="hash" value="" /><button id="button" onclick="Ext.add( $('hash').value ); ">+ Add</button> - or -  <span onclick="Ext.find()" class="foo">Find your extensions</span>
+				</td>
+			</thead>
+			<tbody>
+				<tr>
+					<th>Notify (badge) on: </th>
+					<td><label><input type="checkbox" />new rating</label>&nbsp;&nbsp;<label><input type="checkbox" />new Comment</label></td>
+				</tr>
+
+				<tr>
+					<th>Notify (desktop) on: </th>
+					<td>
+						<!-- Not for now, TODO: do make it work -->
+						<span style="display: none;"><label><input type="checkbox" />new rating</label>
+						&nbsp;&nbsp;
+							</span>
+						<label>
+						
+						<input type="checkbox" />new Comment</label></td>
+				</tr>
+				
+				
+			<tr>
+					<th>Update every: </th>
+					<td><select id="interval"></select></td>
+				</tr>		
+			<tr>
+				<th>Compact view:</th>
+				<td><label><input type="checkbox" /></label></td>
+			</tr>	
+			
+			<tr>
+				<th>Ignore comments from:</th>
+				<td><label><input type="text"  name="handle" id="field-handle" style="width: 14em;" placeholder="Yourself maybe?"  /></label></td>
+			</tr>			
+			</tbody>
+		</table>
+		
+	</div>
+	
+</div>
+
+
+</body>
+</html>
