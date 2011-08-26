@@ -1293,14 +1293,14 @@ Ext.Extension = new Class({
 				
 				
 				var diff 	= this.users && this.users.previous ? this.users.total - this.users.previous : 0;
-				var class	= '';
+				var _class	= '';
 				var title 	= 'no change';
 				if(diff) {
-					class = diff > 0 ? ' up' : ' down';
+					_class = diff > 0 ? ' up' : ' down';
 					title = diff > 0  ? ' +' + diff.toFormatted(',') : diff.toFormatted(',');
 				}
 				
-				html.push('<td class="cell-users'+class+'" title="'+title+'"><div>' + Number((this.users.total || 0).toString().replace(/,/, '').toInt()).toFormatted(',') +  '</div></td>'); 		
+				html.push('<td class="cell-users'+_class+'" title="'+title+'"><div>' + Number((this.users.total || 0).toString().replace(/,/, '').toInt()).toFormatted(',') +  '</div></td>'); 		
 				// Installs
 				// title="'+(this.installs && this.installs.previous && this.installs.previous != this.installs.total ? 'Was '+this.installs.previous : '')+'"
 				html.push('<td class="cell-installs" ><div>' + Number((this.installs.total || 0).toString().replace(/,/, '').toInt()).toFormatted(',') + '</div></td>'); 		// Installs
