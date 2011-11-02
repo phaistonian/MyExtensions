@@ -154,7 +154,7 @@ Ext = {
 					document.body.className = 'compact';
 				}
 
-				tableContainer.setHTML('<div id="top-left"><a href="https://chrome.google.com/webstore/developer/dashboard"  target="_blank" title="Developer Dashboard (Gallery)" id="link-dashboard">Dashboard</a><a a href="https://chrome.google.com/webstore/detail/igejgfmbjjjjplnnlgnbejpkpdajkblm"  target="_blank" title="Feedback and comments" id="link-feedback">Feedback</a></div><div id="top-right"><a href="javascript:void(0)"  onclick="chrome.tabs.create({url:\'chrome-extension://\'+location.hostname+\'/options.html\'})" title="Extension options" id="link-options">Options</a> <span id="link-extensions" class="foo" onclick="chrome.tabs.create({url: \'chrome://extensions/\'});" title="chrome://extensions/">Extensions</span></div><table border="0" cellspacing="0" id="table" summary="myExtensions">' + 
+				tableContainer.setHTML('<div id="top-left"><a href="https://chrome.google.com/webstore/developer/dashboard"  target="_blank" title="Developer Dashboard (Gallery)" id="link-dashboard">Dashboard</a><a a href="https://chrome.google.com/webstore/detail/igejgfmbjjjjplnnlgnbejpkpdajkblm"  target="_blank" title="Feedback and comments" id="link-feedback">Feedback</a></div><div id="top-right"><a href="javascript:void(0)"  onclick="chrome.tabs.create({url:\'chrome-extension://\'+location.hostname+\'/options.html\'})" title="Extension options" id="link-options">Options</a> <span id="link-extensions" class="foo" onclick="chrome.tabs.create({url: \'chrome://settings/extensionSettings/\'});" title="chrome://settings/extensionSettings/">Extensions</span></div><table border="0" cellspacing="0" id="table" summary="myExtensions">' + 
 				(!Ext.options.compact ? 
 				'<thead class="thead-top"><tr><th class="cell-img"></th><th class="cell-link">&nbsp;</th><td colspan="2" class="cell-thead-asof"><dfn id="ranks-updated" title="As of: ' + Ext.getTime(Ext.ranksUpdated * 1000) + '">out of <span id="total-extensions">'+(Ext.totalExtensions || 0).toFormatted()+'</span></dfn></td><td class="cell-users"><span id="total-users">'+(Ext.getTotalUsers())+'</span></td><td class="cell-installs"></td><td class="cell-ratings"></td><td class="cell-ratings-total"></td><td class="cell-comments"></td></tr></thead>' : '' ) +
 				
@@ -1405,16 +1405,16 @@ Ext.Extension = new Class({
 				var verMatch;
 				
 				// Handle verirified case
-				if(verMatch = responseText.match(/website">[\s\S]*?Verified author: ([\s\S]*?)<\/div>/)) {
-					responseText = responseText.replace(/website">[\s\S]*?Verified author: ([\s\S]*?)<\/div>/, '');
-					responseText = responseText.replace(/<\/h2>/, '<span>by ' + verMatch[1].trim() +'</span></h2>');
-				}
+//				if(verMatch = responseText.match(/website">[\s\S]*?Verified author: ([\s\S]*?)<\/div>/)) {
+//					responseText = responseText.replace(/website">[\s\S]*?Verified author: ([\s\S]*?)<\/div>/, '');
+//					responseText = responseText.replace(/<\/h2>/, '<span>by ' + verMatch[1].trim() +'</span></h2>');
+//				}
 				
 // 				var matches = responseText.match(/cx\-title[\s\S]*?style="background\-image:([\s\S]*?);">[\s\S]*?h2>(.*?)\n[\s\S]*?<span>.*? ([\s\S]*?)<\/span>[\s\S]*?NumRatings[\s\S]*?-[^\d]+?([\d,]+?)\s[\s\S]*?-[^\d]+?([\d,]+?)\s[\s\S]*?cx\-version\-info[\s\S]*?([\d\.]+?)\s[\s\S]*?cx.timeToLocalDateStr\((.*?)\)/i);
 
 //
 // MOD !
-				var matches = responseText.match(/<img class="detail-logo-[^"]*" src="([^"]*)" alt="Logo">[\s\S]*<div class="detail-title">([^<]*)<\/div>([^<]*)<[\s\S]*<div class="detail-num-users">([^<]*) users<[\s\S]*Version: <\/b>([^<]*)<[\s\S]*<span id='detail-update-date'>([^<]*)<[\s\S]*users<br>([^<]*) weekly installs</i);
+				var matches = responseText.match(/<img class="detail-dialog-icon[^"]*" alt="Extension" src="([^"]*)"[^>]*>[^<]*<[\s\S]*<h1 class="detail-dialog-title">([^<]*)<\/h1>[^<]*<[\s\S]*(?:<span class="detail-dialog-from[^"]*"[^>]*>(?:[^<]*<a[^>]*>([^<]*)<\/a>|from(?:&nbsp;)*([^<]*))<\/span>|<div class="detail-dialog-from[^"]*"[^>]*>Verified author: ([^<]*)<\/div>)[^<]*<[\s\S]*<span class="detail-dialog-users"[^>]*>([^<]*) users<\/span>[^<]*<[\s\S]*<div class="overview-tab-right-bar-summary"[^>]*>([^<]*)<\/div>/i);
 				;
 				// var matches = xhr.responseText.match(/cx\-title[\s\S]*?style="background\-image:([\s\S]*?);">[\s\S]*?h2>(.*?) <span>.*? ([\s\S]*?)<\/span>[\s\S]*?NumRatings[\s\S]*?-[^\d]+?([\d,]+?)\s[\s\S]*?-[^\d]+?([\d,]+?)\s[\s\S]*?cx\-version\-info[\s\S]*?([\d\.]+?)\s[\s\S]*?cxOutputDateStr\((.*?)\)/i);
 				//console.log('MATCHES', matches)
@@ -1452,23 +1452,24 @@ Ext.Extension = new Class({
 
 					console.log(this.img)
 					this.title 		= matches[2];
-					this.author		= matches[3].trim().replace(/\)$/, '');
+					this.author		= matches[3] || matches[4] || matches[5];
+					this.author     = this.author.trim().replace(/\)$/, '');
 					
 					// CHANGED: 16.01.2010
 					// Those changes are mae in order to support down/up references.
 					var currentTotal		= this.users.total;
-					var currentInstalls		= this.installs.total;
+//					var currentInstalls		= this.installs.total;
 					
 					if(Ext.localTest) {
 						console.log(this.title);
 						console.log(this.author);
-						console.log(matches[4]);
-						console.log(matches[5]);
+						console.log(matches[6]);
+						console.log(matches[7]);
 						return;
 					}
 					
 					this.users			= this.users || {};
-					this.users.total 	= Number(matches[4].replace(/,/, ''));
+					this.users.total 	= Number(matches[6].replace(/,/, ''));
 					
 					if(parseInt(currentTotal) == parseInt(this.users.total)) {
 						this.users.previous = this.users.previous || this.users.total;
@@ -1489,19 +1490,19 @@ Ext.Extension = new Class({
 					}
 					
 										
-					this.installs		= this.installs || {};
+//					this.installs		= this.installs || {};
 //					this.installs.total = Number(matches[5].replace(/,/, ''));
 // MOD !
-					this.installs.total = Number(matches[7].replace(/,/, ''));
+					// this.installs.total = Number(matches[7].replace(/,/, ''));
 
-					if(parseInt(currentInstalls) == parseInt(this.installs.total)) {
-						this.installs.previous = this.installs.previous || this.installs.total;
-					} else {
-						this.installs.previous = currentInstalls;
-						
+//					if(parseInt(currentInstalls) == parseInt(this.installs.total)) {
+//						this.installs.previous = this.installs.previous || this.installs.total;
+//					} else {
+//						this.installs.previous = currentInstalls;
+//						
 						// We are going to need this
-						this.metaUpdated	= new Date().getTime();
-					}
+//						this.metaUpdated	= new Date().getTime();
+//					}
 
 					
 					//	previous	: this.installs.total || null
@@ -1510,7 +1511,7 @@ Ext.Extension = new Class({
 //					this.version	= matches[6];
 // MOD !
 					
-					this.version	= matches[5]
+//					this.version	= matches[5]
 					// New
 //					this.versionDT	= matches[7];
 // MOD !
@@ -1535,7 +1536,7 @@ Ext.Extension = new Class({
 				
 					
 					if(Ext.localTest) {
-						console.log(this.users, this.installs)
+						console.log(this.users/*, this.installs*/)
 						console.log('done local test')
 						throw(1)
 						return this;
@@ -1547,7 +1548,7 @@ Ext.Extension = new Class({
 					this.getRatings();
 				}  else {
 					// If we have a title already, its just a network issue
-					if(!this.title || !this.version ||  this.title === 'undefined' ) {
+					if(!this.title /*|| !this.version*/ ||  this.title === 'undefined' ) {
 						alert('Extension id seems to be invalid ;(');
 						this.remove();	
 					} else {
