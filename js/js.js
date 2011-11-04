@@ -154,7 +154,7 @@ Ext = {
 					document.body.className = 'compact';
 				}
 
-				tableContainer.setHTML('<div id="top-left"><a href="https://chrome.google.com/webstore/developer/dashboard"  target="_blank" title="Developer Dashboard (Gallery)" id="link-dashboard">Dashboard</a><a a href="https://chrome.google.com/webstore/detail/igejgfmbjjjjplnnlgnbejpkpdajkblm"  target="_blank" title="Feedback and comments" id="link-feedback">Feedback</a></div><div id="top-right"><a href="javascript:void(0)"  onclick="chrome.tabs.create({url:\'chrome-extension://\'+location.hostname+\'/options.html\'})" title="Extension options" id="link-options">Options</a> <span id="link-extensions" class="foo" onclick="chrome.tabs.create({url: \'chrome://settings/extensionSettings/\'});" title="chrome://settings/extensionSettings/">Extensions</span></div><table border="0" cellspacing="0" id="table" summary="myExtensions">' + 
+				tableContainer.setHTML('<div id="top-left"><a href="https://chrome.google.com/webstore/developer/dashboard"  target="_blank" title="Developer Dashboard (Gallery)" id="link-dashboard">Dashboard</a><a a href="https://chrome.google.com/webstore/detail/igejgfmbjjjjplnnlgnbejpkpdajkblm"  target="_blank" title="Feedback and reviews" id="link-feedback">Feedback</a></div><div id="top-right"><a href="javascript:void(0)"  onclick="chrome.tabs.create({url:\'chrome-extension://\'+location.hostname+\'/options.html\'})" title="Extension options" id="link-options">Options</a> <span id="link-extensions" class="foo" onclick="chrome.tabs.create({url: \'chrome://settings/extensionSettings/\'});" title="chrome://settings/extensionSettings/">Extensions</span></div><table border="0" cellspacing="0" id="table" summary="myExtensions">' + 
 				(!Ext.options.compact ? 
 				'<thead class="thead-top"><tr><th class="cell-img"></th><th class="cell-link">&nbsp;</th><td colspan="2" class="cell-thead-asof"><dfn id="ranks-updated" title="As of: ' + Ext.getTime(Ext.ranksUpdated * 1000) + '">out of <span id="total-extensions">'+(Ext.totalExtensions || 0).toFormatted()+'</span></dfn></td><td class="cell-users"><span id="total-users">'+(Ext.getTotalUsers())+'</span></td><td class="cell-installs"></td><td class="cell-ratings"></td><td class="cell-ratings-total"></td><td class="cell-comments"></td></tr></thead>' : '' ) +
 				
@@ -705,7 +705,7 @@ Ext = {
 			if(extension['comments']['new'] && Ext.options.desktop.comments ) {
 				if(extension.comments.latest && extension.comments.latest.entity && ( (Ext.inBg && !Ext.bgDone) || (extension.desktopNotified != extension.comments.latest.timestamp) )) {
 					if(extension.comments.latest.entity.nickname != Ext.options.ignoreFrom) {
-						new Ext.Notification((extension.comments.latest && extension.comments.latest.comment ? extension.comments.latest.comment : 'N/A'), 'New comment for ' + extension.title + ' (from '+ (extension.comments.latest.entity.nickname || 'Anonymoys') +')');
+						new Ext.Notification((extension.comments.latest && extension.comments.latest.comment ? extension.comments.latest.comment : 'N/A'), 'New review for ' + extension.title + ' (from '+ (extension.comments.latest.entity.nickname || 'Anonymous') +')');
 					}
 					
 					// Timestamp instead
@@ -1284,7 +1284,7 @@ Ext.Extension = new Class({
 			//html.push('<th class="cell-img"><div class=\"img\"  style="background-repeat: no-repeat; background-position: center top;background-image:'+this.img+'" title="'+this.title+' logo"></div><img src="'+this.img+'" width="20" height="20" /></th>');
 			html.push('<th class="cell-img>"<div class="img"><img onclick="Ext.install(\''+this.hash+'\')" title="Click to install '+this.title+' extension" alt="" width=\"'+(Ext.options.compact ? 16 : 32)+'\" height=\"'+(Ext.options.compact ? 16 : 32)+'\" src="'+this.img+'"  /></div></th>');
 			
-			html.push('<th class="cell-link"><div class="link"><a onclick="return( Ext.seen(\''+this.hash+'\', event) )" '+(this.author ? 'title="By '+this.author+'"' : '') + ' href="https://chrome.google.com/extensions/detail/'+this.hash+'" target="_blank">' + this.title + '</a></div><div class="version"><a title="Edit this extension" target="_blank" href="https://chrome.google.com/webstore/developer/edit/'+ this.hash +'">edit</a> <span class="featured">FEATURED ('+(this.ranking && this.ranking.featured ? this.ranking.featured : 0) +')</span><em>V: ' + this.version + isNew + (versionDT ? '<dt>' + versionDT + '</dt>' : '')+'</em></div></th>');
+			html.push('<th class="cell-link"><div class="link"><a onclick="return( Ext.seen(\''+this.hash+'\', event) )" '+(this.author ? 'title="By '+this.author+'"' : '') + ' href="https://chrome.google.com/webstore/detail/'+this.hash+'" target="_blank">' + this.title + '</a></div><div class="version"><a title="Edit this extension" target="_blank" href="https://chrome.google.com/webstore/developer/edit/'+ this.hash +'">edit</a> <span class="featured">FEATURED ('+(this.ranking && this.ranking.featured ? this.ranking.featured : 0) +')</span><em>V: ' + this.version + isNew + (versionDT ? '<dt>' + versionDT + '</dt>' : '')+'</em></div></th>');
 			
 			if(!Ext.options.compact) {
 				html.push('<td title="'+this.hash+'" class="ranking cell-rank-popularity">' + (this.ranking.popularity > 0 && this.ranking.popularity < 999999  ? Number((this.ranking.popularity || 0).toString().replace(/,/, '').toInt()).toFormatted(',')  : '>' + Ext.maxRank) +  '</td>');
@@ -1383,7 +1383,7 @@ Ext.Extension = new Class({
 		}
 		else {
 			var html 		= ['<th><img src="'+this.img+'" title="'+this.title+' logo" width="16" height="16" /></th>'];
-			html.push('<th><div class="link"><a '+(this.author ? 'title="By '+this.author+'"' : '') + ' target="_blank" href="https://chrome.google.com/extensions/detail/'+this.hash+'">' + this.title + '</a></th>');
+			html.push('<th><div class="link"><a '+(this.author ? 'title="By '+this.author+'"' : '') + ' target="_blank" href="https://chrome.google.com/webstore/detail/'+this.hash+'">' + this.title + '</a></th>');
 			//</div><div class="version">V: ' + this.version + (versionDT ? '<dt>' + versionDT + '</dt>' : '')+'</div></th>');
 			html.push('<td><em class="foo" onclick="Ext.remove(\''+this.hash+'\')">Remove</em></td>');
 			row.setHTML(html.join('\n')).injectIn(tbody)		 	
@@ -1398,163 +1398,111 @@ Ext.Extension = new Class({
 	getMeta		: function() {
 		Ext.XHR['meta'] = new Ajax({
 			'method'		: 'GET',
-			'url'			: Ext.localTest ? 'http://192.168.1.200/dump.html' : 'https://chrome.google.com/webstore/detail/' + this.hash + '?hl=en',
+			'url'			: Ext.localTest ? 'http://192.168.1.200/dump.json' : 'https://chrome.google.com/webstore/ajax/detail?hl=en&id=' + this.hash,
 			'onSuccess'		: function(xhr) {
-				// var responseText = xhr.responseText.replace(/<div class="cx\-verified\-author[\s\S]*?<\/div>/i, '');
-				var responseText	= xhr.responseText;
-				var verMatch;
-				
-				// Handle verirified case
-//				if(verMatch = responseText.match(/website">[\s\S]*?Verified author: ([\s\S]*?)<\/div>/)) {
-//					responseText = responseText.replace(/website">[\s\S]*?Verified author: ([\s\S]*?)<\/div>/, '');
-//					responseText = responseText.replace(/<\/h2>/, '<span>by ' + verMatch[1].trim() +'</span></h2>');
-//				}
-				
-// 				var matches = responseText.match(/cx\-title[\s\S]*?style="background\-image:([\s\S]*?);">[\s\S]*?h2>(.*?)\n[\s\S]*?<span>.*? ([\s\S]*?)<\/span>[\s\S]*?NumRatings[\s\S]*?-[^\d]+?([\d,]+?)\s[\s\S]*?-[^\d]+?([\d,]+?)\s[\s\S]*?cx\-version\-info[\s\S]*?([\d\.]+?)\s[\s\S]*?cx.timeToLocalDateStr\((.*?)\)/i);
+				var dirtyPrefix	= ')]}\'',
+					response = null,
+					responseText = xhr.responseText ? xhr.responseText.trim() : '';
 
-//
-// MOD !
-				var matches = responseText.match(/<img class="detail-dialog-icon[^"]*" alt="Extension" src="([^"]*)"[^>]*>[^<]*<[\s\S]*<h1 class="detail-dialog-title">([^<]*)<\/h1>[^<]*<[\s\S]*(?:<span class="detail-dialog-from[^"]*"[^>]*>(?:[^<]*<a[^>]*>([^<]*)<\/a>|from(?:&nbsp;)*([^<]*))<\/span>|<div class="detail-dialog-from[^"]*"[^>]*>Verified author: ([^<]*)<\/div>)[^<]*<[\s\S]*<span class="detail-dialog-users"[^>]*>([^<]*) users<\/span>[^<]*<[\s\S]*<div class="overview-tab-right-bar-summary"[^>]*>([^<]*)<\/div>/i);
-				;
-				// var matches = xhr.responseText.match(/cx\-title[\s\S]*?style="background\-image:([\s\S]*?);">[\s\S]*?h2>(.*?) <span>.*? ([\s\S]*?)<\/span>[\s\S]*?NumRatings[\s\S]*?-[^\d]+?([\d,]+?)\s[\s\S]*?-[^\d]+?([\d,]+?)\s[\s\S]*?cx\-version\-info[\s\S]*?([\d\.]+?)\s[\s\S]*?cxOutputDateStr\((.*?)\)/i);
-				//console.log('MATCHES', matches)
-				// Aw snap! detection
-				if(xhr.responseText.length < 500 && xhr.responseText.toLowerCase().indexOf('aw snap') != -1) {
-					if(Ext.inOptions) {
+				if (!responseText) {
+					if (Ext.inOptions) {
 						alert('Unable to retrieve data. Please try again later.');
-						this.remove();						
 					}
-					
+
+					this.remove();
 					return this;
 				}
-				
-				
-				// ADDED: 13.3.2010
-				if( xhr.responseText.length < 600 && xhr.responseText.toLowerCase().indexOf('Item not found. This item may have been removed by its author') != -1) {
-					this.remove();
-					return this;	
+
+				// Fix dirty JSON included in response
+				if (responseText.indexOf(dirtyPrefix) === 0) {
+					responseText = responseText.substring(dirtyPrefix.length, responseText.length);
 				}
-				
 
+				// Fix more dirty JSON where array contains "empty" elements... bad Google!
+				responseText = responseText.replace(/,(?=,)/g, ',null');
 
-			
-				// alert(matches)
-				if(matches && matches.length) {
-					//this.img 		= 'https://chrome.google.com/extensions/img/' + matches[1] + 'thumb';
-					this.img		= matches[1];
-					if(this.img.indexOf('url(/extensions') !== -1) {
-						this.img = this.img.replace(/url\(\/extensions/, 'url(https://chrome.google.com/extensions')
+				// Attempt to parse the response
+				try {
+					response = JSON.parse(responseText);
+				} catch (e) {}
+
+				if (response && response.length && response[0] === 'getitemdetailresponse') {
+					this.img = response[1][0][3];
+
+					if (this.img.indexOf('url(/extensions') !== -1) {
+						this.img = this.img.replace(/url\(\/extensions/, 'url(https://chrome.google.com/extensions');
 					}
-					// Fix applied 16 Oct 2010
-// 					this.img = this.img.replace(/url\((.*?)\)$/, '$1');
-// MOD !
-					this.img = "http:" + this.img;
 
-					console.log(this.img)
-					this.title 		= matches[2];
-					this.author		= matches[3] || matches[4] || matches[5];
-					this.author     = this.author.trim().replace(/\)$/, '');
-					
+					// Fix applied 16 Oct 2010
+					this.img = 'http:' + this.img;
+
+					console.log(this.img);
+
+					this.title = response[1][0][1];
+					this.author = response[1][0][2];
+					this.author = this.author.trim().replace(/\)$/, '');
+
 					// CHANGED: 16.01.2010
 					// Those changes are mae in order to support down/up references.
-					var currentTotal		= this.users.total;
-//					var currentInstalls		= this.installs.total;
-					
-					if(Ext.localTest) {
+					var currentTotal = this.users.total;
+
+					if (Ext.localTest) {
 						console.log(this.title);
 						console.log(this.author);
-						console.log(matches[6]);
-						console.log(matches[7]);
+						console.log(response[1][4]);
 						return;
 					}
-					
-					this.users			= this.users || {};
-					this.users.total 	= Number(matches[6].replace(/,/, ''));
-					
-					if(parseInt(currentTotal) == parseInt(this.users.total)) {
+
+					this.users = this.users || {};
+					this.users.total = Number(response[1][4].replace(/,/, ''));
+
+					if (parseInt(currentTotal) === parseInt(this.users.total)) {
 						this.users.previous = this.users.previous || this.users.total;
 					} else {
 						this.users.previous = currentTotal;
-						
-						// We are going to need this
-						// Later
-						this.metaUpdated	= new Date().getTime();
+						// We are going to need this later
+						this.metaUpdated = new Date().getTime();
 					}
-					
-					
-					
-					if(0) {
+
+					if (0) {
 						console.log('USERS REPORT');
-						console.log('TOTAL: ' + this.users.total );
-						console.log('PREVIOUS: ' + this.users.previous );
+						console.log('TOTAL: ' + this.users.total);
+						console.log('PREVIOUS: ' + this.users.previous);
 					}
-					
-										
-//					this.installs		= this.installs || {};
-//					this.installs.total = Number(matches[5].replace(/,/, ''));
-// MOD !
-					// this.installs.total = Number(matches[7].replace(/,/, ''));
 
-//					if(parseInt(currentInstalls) == parseInt(this.installs.total)) {
-//						this.installs.previous = this.installs.previous || this.installs.total;
-//					} else {
-//						this.installs.previous = currentInstalls;
-//						
-						// We are going to need this
-//						this.metaUpdated	= new Date().getTime();
-//					}
+					this.version = response[1][6];
 
-					
-					//	previous	: this.installs.total || null
-					
-					
-//					this.version	= matches[6];
-// MOD !
-					
-//					this.version	= matches[5]
-					// New
-//					this.versionDT	= matches[7];
-// MOD !
-//					this.versionDT	= matches[6];
-
-						
 					Ext.store();
-				
-					
-					
+
 					Ext.sendRequest({
-						'action'		: 'update',
-						'instance'		: this
+						'action': 'update',
+						'instance': this
 					});
-				
-					
-					if(Ext.inOptions) {
+
+					if (Ext.inOptions) {
 						this.update();
 					}
-					
-					
-				
-					
-					if(Ext.localTest) {
-						console.log(this.users/*, this.installs*/)
-						console.log('done local test')
-						throw(1)
+
+					if (Ext.localTest) {
+						console.log(this.users);
+						console.log('done local test');
+						throw (1);
 						return this;
 					}
-					
-						//  Nullify stuff
-					json = xhr =  matches = null;
+
+					// Nullify stuff
+					json = xhr = dirtyPrefix = response = responseText = null;
 					// Next step
 					this.getRatings();
-				}  else {
+				} else {
 					// If we have a title already, its just a network issue
-					if(!this.title /*|| !this.version*/ ||  this.title === 'undefined' ) {
+					if (!this.title || !this.version ||  this.title === 'undefined') {
 						alert('Extension id seems to be invalid ;(');
 						this.remove();	
 					} else {
-						// network failure
+						// Network failure
 					}
-					
+
 					Ext.XHR['meta'] = null;
 				}
 			}.bind(this)
@@ -1888,7 +1836,7 @@ Ext.Extension = new Class({
 	
 	getCommentsHTML : function() {
 		if(this.comments && this.comments.latest && this.comments.latest.entity) {
-			var html = ['<div style="max-height: '+ (document.body.offsetHeight -10) + 'px;overflow: auto;"><strong>Latest comment from: ' + (this.comments.latest.entity.nickname || 'Anonymoys')+'</strong>'];
+			var html = ['<div style="max-height: '+ (document.body.offsetHeight -10) + 'px;overflow: auto;"><strong>Latest review from: ' + (this.comments.latest.entity.nickname || 'Anonymous')+'</strong>'];
 			html.push('<p>'+(this.comments.latest && this.comments.latest.comment ? this.comments.latest.comment.replace(/\n/gi, '<br />')  : 'N/A') + '</p></div>');
 		
 			return html.join('');
@@ -2082,7 +2030,7 @@ Ext.Bg = {
 Ext.Notification = new Class({
 	options		: {
 		'icon'	: 'icons/48.png',
-		'title'	: 'My Extensions - New Comment!',
+		'title'	: 'My Extensions - New Review!',
 		'ttl'	: null
 	},
 	
