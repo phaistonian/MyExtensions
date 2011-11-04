@@ -705,7 +705,7 @@ Ext = {
 			if(extension['comments']['new'] && Ext.options.desktop.comments ) {
 				if(extension.comments.latest && extension.comments.latest.entity && ( (Ext.inBg && !Ext.bgDone) || (extension.desktopNotified != extension.comments.latest.timestamp) )) {
 					if(extension.comments.latest.entity.nickname != Ext.options.ignoreFrom) {
-						new Ext.Notification((extension.comments.latest && extension.comments.latest.comment ? extension.comments.latest.comment : 'N/A'), 'New review for ' + extension.title + ' (from '+ (extension.comments.latest.entity.nickname || 'Anonymoys') +')');
+						new Ext.Notification((extension.comments.latest && extension.comments.latest.comment ? extension.comments.latest.comment : 'N/A'), 'New review for ' + extension.title + ' (from '+ (extension.comments.latest.entity.nickname || 'Anonymous') +')');
 					}
 					
 					// Timestamp instead
