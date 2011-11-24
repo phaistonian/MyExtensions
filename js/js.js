@@ -1397,7 +1397,7 @@ Ext.Extension = new Class({
 	
 	getMeta		: function() {
 		Ext.XHR['meta'] = new Ajax({
-			'method'		: 'GET',
+			'method'		: 'POST',
 			'url'			: Ext.localTest ? 'http://192.168.1.200/dump.json' : 'https://chrome.google.com/webstore/ajax/detail?hl=en&id=' + this.hash,
 			'onSuccess'		: function(xhr) {
 				var dirtyPrefix	= ')]}\'',
@@ -1426,7 +1426,8 @@ Ext.Extension = new Class({
 					response = JSON.parse(responseText);
 				} catch (e) {}
 
-				if (response && response.length && response[0] === 'getitemdetailresponse') {
+				if (response && response[1] && response[1].length && response[1][0] === 'getitemdetailresponse') {
+					response = response[1];
 					this.img = response[1][0][3];
 
 					if (this.img.indexOf('url(/extensions') !== -1) {
