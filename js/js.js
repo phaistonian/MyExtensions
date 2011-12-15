@@ -1393,12 +1393,55 @@ Ext.Extension = new Class({
 
 		return this;
 	},
-		
-	
-	getMeta		: function() {
+
+	getMeta		: function () {
+		// Without `pv` parameter the actual meta call gets a 441 error
+		// response and appears to only accept a specific value, as far as I
+		// can tell and using `Math.round((new Date) / 1000)` to generate a
+		// similar timestamp didn't work, unfortunately. In an attempt to be
+		// future-proof I'm extracting this value from the HTML of the
+		// extension's detail page, as this is the only place I can see it is
+		// "hard coded".
 		Ext.XHR['meta'] = new Ajax({
+			'method'	: 'GET',
+			'url'		: 'https://chrome.google.com/webstore/detail/' + this.hash,
+			'onSuccess'	: function (xhr) {
+				// Multiply by 1000 and you have the following timestamp;  
+				// Tue, 13 Dec 2011 17:16:16 GMT  
+				// To reduce the risk of breaking things I'm storing the known
+				// working value as the default in case it cannot be found.
+				var pv = '1323796576',
+					responseText = xhr.responseText ? xhr.responseText.trim() : '';
+
+				if (!responseText) {
+					if (Ext.inOptions) {
+						alert('Unable to retrieve data. Please try again later.');
+					}
+
+					this.remove();
+					return this;
+				}
+
+				var matches = responseText.match(/<script type="text\/javascript" src="\/webstore\/static\/(\d*)\/wall\/js\/webstore.js"><\/script>/i);
+
+				if (matches && matches.length) {
+					pv = matches[1];
+				}
+
+				this.getActualMeta(pv);
+
+				pv = xhr = responseText = matches = null;
+				Ext.XHR['meta'] = null;
+			}.bind(this)
+		}).send();
+
+		return this;
+	},
+
+	getActualMeta: function (pv) {
+		Ext.XHR['actualMeta'] = new Ajax({
 			'method'		: 'POST',
-			'url'			: Ext.localTest ? 'http://192.168.1.200/dump.json' : 'https://chrome.google.com/webstore/ajax/detail?hl=en&id=' + this.hash,
+			'url'			: Ext.localTest ? 'http://192.168.1.200/dump.json' : 'https://chrome.google.com/webstore/ajax/detail?hl=en&pv=' + pv + '&id=' + this.hash,
 			'onSuccess'		: function(xhr) {
 				var dirtyPrefix	= ')]}\'',
 					response = null,
@@ -1504,7 +1547,7 @@ Ext.Extension = new Class({
 						// Network failure
 					}
 
-					Ext.XHR['meta'] = null;
+					Ext.XHR['actualMeta'] = null;
 				}
 			}.bind(this)
 		}).send();
