@@ -1621,85 +1621,98 @@ Ext.Extension = new Class({
 	},
 	
 	getComments	: function() {
-		var entities = [];
- 		//each(Ext.extensions, function(data, id) {
-			entities.push({'url' : 'http://chrome.google.com/extensions/permalink?id=' + this.hash});
-		//});				
-		
 		Ext.XHR['comments'] = new Ajax({
 			'method'		: 'POST',
 			'encodeURI'		: false,	// Needed
-			'url'			: 'https://chrome.google.com/reviews/json/search',
+			'url'			: 'https://chrome.google.com/reviews/components',
 			'headers'		: {
 				'Content-type'	: 'application/xml'
 			},
-			
 			'parameters'	: {
-				'req'		: JSON.stringify({'searchSpecs' :  [{'entities' : entities, 'groups' : ['public_comment'], 'matchExtraGroups' : true, 'startIndex' : 0, 'numResults' : 80, 'includeNickNames' : true}], 'applicationId' : 94 }) + '&requestSource=widget'
+				'req'		: JSON.stringify({
+								"appId": 94,
+								"reqId": (+new Date) + "-0.38102638674899936",
+								"hl": "en",
+								"js": true,
+								"specs": [{
+									"type": "CommentThread",
+									"url": "http://chrome.google.com/extensions/permalink?id=" + this.hash,
+									"groups": "chrome_webstore",
+									"sortby": "lastModificationDate",
+									"startindex": "0",
+									"numresults": "1",
+									"id": "1"
+								}],
+								"internedKeys": [],
+								"internedValues": []
+							 })
 			},
-			
 			'onSuccess'		: function(xhr) {
-				var json = xhr.responseJSON;
-				if(json && json.searchResults ) {
-					this.comments = {
-						'total' 			: Number(json.searchResults[0].numAnnotations.toString().replace(/,/, '').toInt()),
-						'latest'			: json.searchResults[0].annotations ? json.searchResults[0].annotations[0] :{},
-						'previous'			: this.comments.total || null,
-						'latestPrevious' 	: $merge(this.comments.latest) || null,
-						'new'					: this.comments['new'] || false
-					}	
+				var overrideMethod = 'window.google.annotations2.component.load',
+					responseText = xhr.responseText ? xhr.responseText.trim() : '',
+					that = this;
 
-					
+				function parseComments(data) {
+					var results = data['1'].results;
+					that.comments = {
+						'total' 			: Number(results.numAnnotations.toString().replace(/,/, '').toInt()),
+						'latest'			: results.annotations ? results.annotations[0] : {},
+						'previous'			: that.comments.total || null,
+						'latestPrevious' 	: $merge(that.comments.latest) || null,
+						'new'				: that.comments['new'] || false
+					};
+
 					// New comment
 					// TODO: Check counter
-					if(this.comments.latest && this.comments.latest.timestamp && this.comments.latestPrevious && this.comments.latestPrevious.timestamp  && (this.comments.latest.timestamp != this.comments.latestPrevious.timestamp)) {
-						this.comments['new'] = true
+					if (that.comments.latest && that.comments.latest.timestamp && that.comments.latestPrevious && that.comments.latestPrevious.timestamp && (that.comments.latest.timestamp != that.comments.latestPrevious.timestamp)) {
+						that.comments['new'] = true;
 					}
-								
-								
-					// Extra care :)				
-					//alert([this.comments.total, this.comments.previous])
-					if(this.comments.total && this.comments.previous == 0)  {
-						this.comments['new'] = true;
+
+					// Extra care :)
+					//alert([that.comments.total, that.comments.previous])
+					if (that.comments.total && that.comments.previous == 0)  {
+						that.comments['new'] = true;
 					}
-						
-						
+
 					// TESTING ONLY
-					// this.comments['new'] = true;		
-					
-					this.handleComments();
-					
-					json = null;
-					
+					// that.comments['new'] = true;
+
+					that.handleComments();
+
+					xhr = responseText = overrideMethod = data = results = null;
+
 					Ext.store();
 					Ext.sendRequest({
 						'action'		: 'update',
-						'instance'		: this
+						'instance'		: that
 					});
-					
-				
-					
+
 					// Next step
 					//console.log((new Date().getTime() - (Ext.ranksUpdated * 1000)) / 1000);
-					if(Ext.shouldGetRatings()) {
-						
-						this.getRanking();
+					if (Ext.shouldGetRatings()) {
+						that.getRanking();
 					}
-					
+
 					/*
-					if(Ext.ranksUpdated) {
-						var diff = (new Date().getTime() - (Ext.ranksUpdated * 1000) ) / 1000;
-						if(diff  > (3600   * 2 ) ) {
-							this.getRanking();	
+					if (Ext.ranksUpdated) {
+						var diff = (new Date().getTime() - (Ext.ranksUpdated * 1000)) / 1000;
+						if (diff  > (3600 * 2)) {
+							that.getRanking();	
 						} else {
 							 //console.log('skipping');
 						}
 					} else {
-						this.getRanking();
+						that.getRanking();
 					}
 					*/
-					
+
 					Ext.XHR['comments'] = null;
+				}
+
+				// eval is evil! But response can contain JavaScript, not just JSON
+				if (responseText && responseText.indexOf(overrideMethod) === 0) {
+					responseText = responseText.replace(overrideMethod, 'parseComments');
+					eval(responseText);
 				}
 			}.bind(this)	
 		}).send();		
