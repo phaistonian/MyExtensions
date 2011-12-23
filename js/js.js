@@ -159,7 +159,7 @@ Ext = {
 				'<thead class="thead-top"><tr><th class="cell-img"></th><th class="cell-link">&nbsp;</th><td colspan="2" class="cell-thead-asof"><dfn id="ranks-updated" title="As of: ' + Ext.getTime(Ext.ranksUpdated * 1000) + '">out of <span id="total-extensions">'+(Ext.totalExtensions || 0).toFormatted()+'</span></dfn></td><td class="cell-users"><span id="total-users">'+(Ext.getTotalUsers())+'</span></td><td class="cell-installs"></td><td class="cell-ratings"></td><td class="cell-ratings-total"></td><td class="cell-comments"></td></tr></thead>' : '' ) +
 				
 				(!Ext.options.compact ? 
-				'<thead><th class="cell-img"></th><th class="sort sort-asc cell-link">Extension or Theme</th><td class="cell-rank-popularity sort">Popularity</td><td class="cell-rank-rating sort">Rating<td class="cell-users sort"><dfn title="(Weekly) Computed from update pings in the last week">Users</dfn></td><td class="cell-installs sort"><dfn title="Number of installs in the last week">Installs</dfn></td><td colspan="2" style="text-align: center; sort" class="sort cell-thead-ratings">Ratings</td><td class="cell-comments sort"><img src="img/cell-feedback.png" /></td></tr></thead>'  : 
+				'<thead><th class="cell-img"></th><th class="sort sort-asc cell-link">Extension or Theme</th><td class="cell-rank-popularity sort">Popularity</td><td class="cell-rank-rating sort">Ranking<td class="cell-users sort"><dfn title="(Weekly) Computed from update pings in the last week">Users</dfn></td><td class="cell-installs sort"><dfn title="Number of installs in the last week">Installs</dfn></td><td colspan="2" style="text-align: center; sort" class="sort cell-thead-ratings">Ratings</td><td class="cell-comments sort"><img src="img/cell-feedback.png" /></td></tr></thead>'  : 
 				'<thead><th class="cell-img"></th><th class="sort sort-asc cell-link">Extension or Theme</th><td colspan="2" style="text-align: center;width: 135px;" class="sort cell-thead-version">Version</td><td colspan="2" style="text-align: center;" class="sort cell-thead-ratings">Ratings</td><td class="cell-comments sort"><img src="img/cell-feedback.png" /></td></tr></thead>' ) +
 				
 				
@@ -409,10 +409,12 @@ Ext = {
 			// Delayed is better
 			(function() {
 				
+				/*
 				document.body.getElements('tbody .cell-ratings').each(function(element, index) {
 					
 					Ext.tooltips['ratings'][element.title] = new Tooltip(element, Ext.extensions[element.title].getStarsHTML());
 				});
+				*/
 				
 				document.body.getElements('tbody .cell-comments').each(function(element, index) {
 					Ext.tooltips['comments'][element.title] = new Tooltip(element, Ext.extensions[element.title].getCommentsHTML(), {
@@ -827,9 +829,9 @@ Ext = {
 		
 		this.step++;
 			
-		var actions = 4;
+		var actions = 3;
 		if(!Ext.shouldGetRatings()) {
-			actions = 3;
+			actions = 2;
 		}
 	
 		var percent = Math.round( (100 * this.step) / (this.getTotal() * actions) ).pad(2);	
@@ -1197,25 +1199,38 @@ Ext.Extension = new Class({
 					
 				}
 				
-				var html = this.ratings.average.toFixed(2), ret;
+				var html	= (this.ratings.average || 0).toFixed(2),
+					_class	= '',
+					title	= 'no change',
+					ret;
+				diff = Number(((this.ratings && this.ratings.previousAverage) ? this.ratings.average - this.ratings.previousAverage : 0).toFixed(2));
+
+				if (diff) {
+					_class	= diff > 0 ? ' up' : ' down';
+					title	= ((diff > 0) ? '+' : '') + diff;
+				}
+
 				// NOT FOR NOW
-				if(0) {
-					if(ret = this.getStars()) {
-						html = '<dfn title="'+ret+'">'  + html + '</dfn>';
+				if (0) {
+					if (ret = this.getStars()) {
+						html = '<div title="'+ret+'">'  + html + '</div>';
 					}
 				}  else {
-					html = '<dfn>' + html + '</dfn>';
-					
+					html = '<div>' + html + '</div>';
 				}
-				
+
+				/*
 				if(Ext.tooltips['ratings'][this.hash]) {
 					Ext.tooltips['ratings'][this.hash].setContent(this.getStarsHTML() );
 				}
+				*/
 
 				if(Ext.tooltips['comments'][this.hash]) {
 					Ext.tooltips['comments'][this.hash].setContent(this.getCommentsHTML() );
 				}
-				
+
+				this.elements.ratingsAverage.className = 'cell-ratings' + _class;
+				this.elements.ratingsAverage.title = title;
 				this.elements.ratingsAverage.setHTML(html);
 				this.elements.ratingsTotal.setHTML('('+this.ratings.total.toFormatted(',') +')');
 				
@@ -1282,7 +1297,7 @@ Ext.Extension = new Class({
 		
 		if(Ext.inPopup) {
 			//html.push('<th class="cell-img"><div class=\"img\"  style="background-repeat: no-repeat; background-position: center top;background-image:'+this.img+'" title="'+this.title+' logo"></div><img src="'+this.img+'" width="20" height="20" /></th>');
-			html.push('<th class="cell-img>"<div class="img"><img onclick="Ext.install(\''+this.hash+'\')" title="Click to install '+this.title+' extension" alt="" width=\"'+(Ext.options.compact ? 16 : 32)+'\" height=\"'+(Ext.options.compact ? 16 : 32)+'\" src="'+this.img+'"  /></div></th>');
+			html.push('<th class="cell-img"><div class="img"><img onclick="Ext.install(\''+this.hash+'\')" title="Click to install '+this.title+' extension" alt="" width=\"'+(Ext.options.compact ? 16 : 32)+'\" height=\"'+(Ext.options.compact ? 16 : 32)+'\" src="'+this.img+'"  /></div></th>');
 			
 			html.push('<th class="cell-link"><div class="link"><a onclick="return( Ext.seen(\''+this.hash+'\', event) )" '+(this.author ? 'title="By '+this.author+'"' : '') + ' href="https://chrome.google.com/webstore/detail/'+this.hash+'" target="_blank">' + this.title + '</a></div><div class="version"><a title="Edit this extension" target="_blank" href="https://chrome.google.com/webstore/developer/edit/'+ this.hash +'">edit</a> <span class="featured">FEATURED ('+(this.ranking && this.ranking.featured ? this.ranking.featured : 0) +')</span><em>V: ' + this.version + isNew + (versionDT ? '<dt>' + versionDT + '</dt>' : '')+'</em></div></th>');
 			
@@ -1297,7 +1312,7 @@ Ext.Extension = new Class({
 				var title 	= 'no change';
 				if(diff) {
 					_class = diff > 0 ? ' up' : ' down';
-					title = diff > 0  ? ' +' + diff.toFormatted(',') : diff.toFormatted(',');
+					title = diff > 0  ? '+' + diff.toFormatted(',') : diff.toFormatted(',');
 				}
 				
 				html.push('<td class="cell-users'+_class+'" title="'+title+'"><div>' + Number((this.users.total || 0).toString().replace(/,/, '').toInt()).toFormatted(',') +  '</div></td>'); 		
@@ -1311,22 +1326,31 @@ Ext.Extension = new Class({
 			
 			
 					
-			var _html = (this.ratings.average ||0).toFixed(2), ret;
-			
+			var _html = (this.ratings.average || 0).toFixed(2), ret;
+
+			_class	= '';
+			diff	= Number(((this.ratings && this.ratings.previousAverage) ? this.ratings.average - this.ratings.previousAverage : 0).toFixed(2));
+			title	= 'no change';
+
+			if (diff) {
+				_class	= diff > 0 ? ' up' : ' down';
+				title	= ((diff > 0) ? '+' : '') + diff;
+			}
+
 			// Not for now 
 			if( 0 ) {
 				if(ret = this.getStars()) {
-					_html = '<dfn title="'+ret+'">'  + _html + '</dfn>';
+					_html = '<div title="'+ret+'">'  + _html + '</div>';
 				}
 			} else {
-				_html = '<dfn>' + _html + '</dfn>';
+				_html = '<div>' + _html + '</div>';
 			}
 			
 			//this.elements.ratingsAverage.setHTML(html);
 			
 			
 			
-			html.push('<td class="cell-ratings" title="'+this.hash+'">' + _html + '<br /></td>'); 	// Ratings
+			html.push('<td class="cell-ratings'+_class+'" title="'+title+'">' + _html + '</td>'); 	// Ratings
 			html.push('<td class="cell-ratings-total ghost"><div><em>(' +  (this.ratings.total || 0).toFormatted(',') + ')'   +'</em><span class="ratings-badge"'+(this.ratings && this.ratings['new'] ? ' style="display:block;"' : '')+'>NEW</span></div></td>');
 			html.push('<td class="cell-comments" title="'+this.hash+'"><div><strong>' + ( this.comments.latest  && this.comments.latest.entity ? '<dfn>'+(this.comments.total || 0).toFormatted(',') + '</dfn>' : (this.comments.total || 0).toFormatted(',') ) + '</strong><span class="comments-badge"'+(this.comments && this.comments['new'] && (this.comments.latest && this.comments.latest.entity.nickname != Ext.options.ignoreFrom) ? ' style="display:block;"' : '')+'>NEW</span></div></td>'); 		// Comments
 			
@@ -1516,6 +1540,31 @@ Ext.Extension = new Class({
 
 					this.version = response[1][6];
 
+					// Update ratings
+					this.ratings = {
+						'average'			: response[1][0][12] || 0,
+						'total'				: Number((response[1][0][22] || 0).toString().replace(/,/, '').toInt()),
+						'previousAverage'	: this.ratings.average || null,
+						'stars'				: this.ratings.stars || 0,
+						'previous'			: this.ratings.total || null,
+						'new'				: this.ratings['new'] || false
+					};
+
+					// Extra care :)
+					if (this.ratings.total && this.ratings.previous === 0) {
+						this.ratings['new'] = true;
+					}
+
+					// New rating
+					if (this.ratings.total && this.ratings.previous && (this.ratings.total !== this.ratings.previous)) {
+						this.ratings['new'] = true;
+					}
+
+					// TESTING
+					// this.ratings['new'] = true;
+
+					this.handleRatings();
+
 					Ext.store();
 
 					Ext.sendRequest({
@@ -1537,7 +1586,7 @@ Ext.Extension = new Class({
 					// Nullify stuff
 					json = xhr = dirtyPrefix = response = responseText = null;
 					// Next step
-					this.getRatings();
+					this.getComments();
 				} else {
 					// If we have a title already, its just a network issue
 					if (!this.title || !this.version ||  this.title === 'undefined') {
@@ -1550,71 +1599,6 @@ Ext.Extension = new Class({
 					Ext.XHR['actualMeta'] = null;
 				}
 			}.bind(this)
-		}).send();
-		
-		return this;
-	},
-	
-	// TODO: use this for all on Ext{}
-	getRatings	: function() {
-		var entities = [{'url' : 'http://chrome.google.com/extensions/permalink?id=' + this.hash, 'includeAggregateInfo' : true}];
-		
-		Ext.XHR['ratings'] = new Ajax({
-			'method'		: 'POST',
-			'encodeURI'		: false,	// Needed
-			'url'			: 'https://chrome.google.com/reviews/json/lookup',
-			'headers'		: {
-				'Content-type'	: 'application/xml'
-			},
-			'parameters'	: {
-				'req'		: JSON.stringify({'entities' : entities, 'applicationId' : 94}) + '&requestSource=widget'
-			},
-			'onSuccess'		: function(xhr) {
-				var json = xhr.responseJSON;
-				if(json && json.annotations[0] && json.annotations[0].aggregateInfo ) {
-					this.ratings = {
-						'average'  			: json.annotations[0].aggregateInfo.averageRating,
-						'total'				: Number((json.annotations[0].aggregateInfo.numRatings || 0).toString().replace(/,/, '').toInt()),
-						'previousAverage'	: this.ratings.average,
-						'stars'				: json.annotations[0].aggregateInfo.starRatings,
-						'previous'			: this.ratings.total || null,
-						'new'				: this.ratings['new'] || false
-					}
-				
-					
-					// Extra care :)				
-					if(this.ratings.total && this.ratings.previous === 0) {
-						this.ratings['new'] = true;
-					}
-					
-					
-					// New rating
-					if(this.ratings.total && this.ratings.previous && (this.ratings.total != this.ratings.previous)) {
-						this.ratings['new'] = true
-					}
-				
-					
-					
-					
-					
-					// TESTING
-					// this.ratings['new'] = true;
-								
-					this.handleRatings();
-					Ext.store();
-					Ext.sendRequest({
-							'action'		: 'update',
-							'instance'		: this
-					});
-					
-					json = null;
-			
-					Ext.XHR['ratings'] = null;
-					// Next step
-					this.getComments();
-
-				}
-			}.bind(this)	
 		}).send();
 		
 		return this;
