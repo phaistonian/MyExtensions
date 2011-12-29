@@ -1,24 +1,22 @@
 {
-  "name"			      : "My Extensions",
-  "version"			    : "0.9.4.5",
-  "description"		  : "Are you an extensions developer? Keep track of your Chrome extensions. Be notified for new comments, ratings and more!",
+  "name"  		: "My Extensions",
+  "version"			: "0.9.4.6",
+  "description"		: "Are you an extensions developer? Keep track of your Chrome extensions. Be notified for new comments, ratings and more!",
   "background_page" : "background.html",
   "options_page"    : "options.html",
-  
-  
-  "browser_action"     : {
-    "default_icon"  : "icons/19.png",
-    "default_title" : "My Extensions",
-    "popup"         : "popup.html"
-  },
-  
 
-  "icons": {
-    "19": "icons/19.png",
-    "32": "icons/32.png",
-    "48": "icons/48.png"
+  "browser_action"	: {
+    "default_icon"	: "icons/19.png",
+    "default_title"	: "My Extensions",
+    "popup"			: "popup.html"
+  },
+
+  "icons"	: {
+    "19"	: "icons/19.png",
+    "32"	: "icons/32.png",
+    "48"	: "icons/48.png"
   },  
-  
+
   "permissions": [
     "tabs",
     "bookmarks",
@@ -32,6 +30,6 @@
     "http://chrome.pathfinder.gr/*",
     "https://clients2.google.com/*"
   ],
-  
+
   "update_url": "http://clients2.google.com/service/update2/crx"
 }
