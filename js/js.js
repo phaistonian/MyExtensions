@@ -1014,7 +1014,7 @@ Ext.Extension = new Class({
 			this.ratings 	= this.ratings || {
 				'total' 			: 0,
 				'average' 			: 0,
-				'previousAverage' 	: 0,
+				'previousAverage' 	: null,
 				'stars'				: null,
 				'previous'			: null,
 				'new'				: false
@@ -1065,7 +1065,7 @@ Ext.Extension = new Class({
 			this.ratings 	= this.ratings || {
 				'total' 	: 0,
 				'average' 	: 0,
-				'previousAverage' : 0,
+				'previousAverage' : null,
 				'previous'	: null,
 				'new'		: false
 			}
@@ -1525,7 +1525,7 @@ Ext.Extension = new Class({
 					this.users.total = Number(response[1][4].replace(/,/, ''));
 
 					if (parseInt(currentTotal) === parseInt(this.users.total)) {
-						this.users.previous = this.users.previous || this.users.total;
+						this.users.previous = this.users.previous || null;
 					} else {
 						this.users.previous = currentTotal;
 						// We are going to need this later
@@ -1540,15 +1540,21 @@ Ext.Extension = new Class({
 
 					this.version = response[1][6];
 
+					var currentAverage = this.ratings.average;
+
 					// Update ratings
-					this.ratings = {
-						'average'			: response[1][0][12] || 0,
-						'total'				: Number((response[1][0][22] || 0).toString().replace(/,/, '').toInt()),
-						'previousAverage'	: this.ratings.average || null,
-						'stars'				: this.ratings.stars || 0,
-						'previous'			: this.ratings.total || null,
-						'new'				: this.ratings['new'] || false
-					};
+					this.ratings = this.ratings || {};
+					this.ratings.average	= response[1][0][12] || 0,
+					this.ratings.total		= Number((response[1][0][22] || 0).toString().replace(/,/, '').toInt());
+					this.ratings.stars		= this.ratings.stars || 0;
+					this.ratings.previous	= this.ratings.total || null;
+					this.ratings['new']		= this.ratings['new'] || false;
+
+					if (currentAverage === this.ratings.average) {
+						this.ratings.previousAverage = this.ratings.previousAverage || null;
+					} else {
+						this.ratings.previousAverage = currentAverage;
+					}
 
 					// Extra care :)
 					if (this.ratings.total && this.ratings.previous === 0) {
@@ -1584,7 +1590,7 @@ Ext.Extension = new Class({
 					}
 
 					// Nullify stuff
-					json = xhr = dirtyPrefix = response = responseText = null;
+					json = xhr = dirtyPrefix = response = responseText = currentTotal = currentAverage = null;
 					// Next step
 					this.getComments();
 				} else {
