@@ -154,7 +154,7 @@ Ext = {
 					document.body.className = 'compact';
 				}
 
-				tableContainer.setHTML('<div id="top-left"><a href="https://chrome.google.com/webstore/developer/dashboard"  target="_blank" title="Developer Dashboard (Gallery)" id="link-dashboard">Dashboard</a><a a href="https://chrome.google.com/webstore/detail/igejgfmbjjjjplnnlgnbejpkpdajkblm"  target="_blank" title="Feedback and reviews" id="link-feedback">Feedback</a></div><div id="top-right"><a href="javascript:void(0)"  onclick="chrome.tabs.create({url:\'chrome-extension://\'+location.hostname+\'/options.html\'})" title="Extension options" id="link-options">Options</a> <span id="link-extensions" class="foo" onclick="chrome.tabs.create({url: \'chrome://settings/extensionSettings/\'});" title="chrome://settings/extensionSettings/">Extensions</span></div><table border="0" cellspacing="0" id="table" summary="myExtensions">' + 
+				tableContainer.setHTML('<div id="top-left"><a href="https://chrome.google.com/webstore/developer/dashboard"  target="_blank" title="Developer Dashboard (Gallery)" id="link-dashboard">Dashboard</a><a a href="https://chrome.google.com/webstore/detail/igejgfmbjjjjplnnlgnbejpkpdajkblm"  target="_blank" title="Feedback and reviews" id="link-feedback">Feedback</a></div><div id="top-right"><a href="javascript:void(0)"  onclick="chrome.tabs.create({url:\'chrome-extension://\'+location.hostname+\'/options.html\'})" title="Extension options" id="link-options">Options</a> <span id="link-extensions" class="foo" onclick="chrome.tabs.create({url: \'chrome://settings/extensions/\'});" title="chrome://settings/extensions/">Extensions</span></div><table border="0" cellspacing="0" id="table" summary="myExtensions">' + 
 				(!Ext.options.compact ? 
 				'<thead class="thead-top"><tr><th class="cell-img"></th><th class="cell-link">&nbsp;</th><td colspan="2" class="cell-thead-asof"><dfn id="ranks-updated" title="As of: ' + Ext.getTime(Ext.ranksUpdated * 1000) + '">out of <span id="total-extensions">'+(Ext.totalExtensions || 0).toFormatted()+'</span></dfn></td><td class="cell-users"><span id="total-users">'+(Ext.getTotalUsers())+'</span></td><td class="cell-installs"></td><td class="cell-ratings"></td><td class="cell-ratings-total"></td><td class="cell-comments"></td></tr></thead>' : '' ) +
 				
@@ -1014,7 +1014,7 @@ Ext.Extension = new Class({
 			this.ratings 	= this.ratings || {
 				'total' 			: 0,
 				'average' 			: 0,
-				'previousAverage' 	: 0,
+				'previousAverage' 	: null,
 				'stars'				: null,
 				'previous'			: null,
 				'new'				: false
@@ -1065,7 +1065,7 @@ Ext.Extension = new Class({
 			this.ratings 	= this.ratings || {
 				'total' 	: 0,
 				'average' 	: 0,
-				'previousAverage' : 0,
+				'previousAverage' : null,
 				'previous'	: null,
 				'new'		: false
 			}
@@ -1525,7 +1525,7 @@ Ext.Extension = new Class({
 					this.users.total = Number(response[1][4].replace(/,/, ''));
 
 					if (parseInt(currentTotal) === parseInt(this.users.total)) {
-						this.users.previous = this.users.previous || this.users.total;
+						this.users.previous = this.users.previous || null;
 					} else {
 						this.users.previous = currentTotal;
 						// We are going to need this later
@@ -1540,15 +1540,21 @@ Ext.Extension = new Class({
 
 					this.version = response[1][6];
 
+					var currentAverage = this.ratings.average;
+
 					// Update ratings
-					this.ratings = {
-						'average'			: response[1][0][12] || 0,
-						'total'				: Number((response[1][0][22] || 0).toString().replace(/,/, '').toInt()),
-						'previousAverage'	: this.ratings.average || null,
-						'stars'				: this.ratings.stars || 0,
-						'previous'			: this.ratings.total || null,
-						'new'				: this.ratings['new'] || false
-					};
+					this.ratings = this.ratings || {};
+					this.ratings.average	= response[1][0][12] || 0,
+					this.ratings.total		= Number((response[1][0][22] || 0).toString().replace(/,/, '').toInt());
+					this.ratings.stars		= this.ratings.stars || 0;
+					this.ratings.previous	= this.ratings.total || null;
+					this.ratings['new']		= this.ratings['new'] || false;
+
+					if (currentAverage === this.ratings.average) {
+						this.ratings.previousAverage = this.ratings.previousAverage || null;
+					} else {
+						this.ratings.previousAverage = currentAverage;
+					}
 
 					// Extra care :)
 					if (this.ratings.total && this.ratings.previous === 0) {
@@ -1584,7 +1590,7 @@ Ext.Extension = new Class({
 					}
 
 					// Nullify stuff
-					json = xhr = dirtyPrefix = response = responseText = null;
+					json = xhr = dirtyPrefix = response = responseText = currentTotal = currentAverage = null;
 					// Next step
 					this.getComments();
 				} else {
