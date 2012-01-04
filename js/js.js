@@ -916,7 +916,7 @@ Ext = {
 		
 		new Ajax({
 			'method'	: 'GET',
-			'url'		: 'https://chrome.google.com/extensions/search?q=' + username,
+			'url'		: 'https://chrome.google.com/extensions/search?q=' + username + '&source=igejgfmbjjjjplnnlgnbejpkpdajkblm',
 			'onSuccess' : function(xhr) {
 				var dump = xhr.responseText;
 				if(!dump) {
@@ -1429,7 +1429,7 @@ Ext.Extension = new Class({
 		// "hard coded".
 		Ext.XHR['meta'] = new Ajax({
 			'method'	: 'GET',
-			'url'		: 'https://chrome.google.com/webstore/detail/' + this.hash,
+			'url'		: 'https://chrome.google.com/webstore/detail/' + this.hash + '?source=igejgfmbjjjjplnnlgnbejpkpdajkblm',
 			'onSuccess'	: function (xhr) {
 				// Multiply by 1000 and you have the following timestamp;  
 				// Tue, 13 Dec 2011 17:16:16 GMT  
@@ -1466,7 +1466,7 @@ Ext.Extension = new Class({
 	getActualMeta: function (pv) {
 		Ext.XHR['actualMeta'] = new Ajax({
 			'method'		: 'POST',
-			'url'			: Ext.localTest ? 'http://192.168.1.200/dump.json' : 'https://chrome.google.com/webstore/ajax/detail?hl=en&pv=' + pv + '&id=' + this.hash,
+			'url'			: Ext.localTest ? 'http://192.168.1.200/dump.json' : 'https://chrome.google.com/webstore/ajax/detail?hl=en&pv=' + pv + '&id=' + this.hash + '&source=igejgfmbjjjjplnnlgnbejpkpdajkblm',
 			'onSuccess'		: function(xhr) {
 				var dirtyPrefix	= ')]}\'',
 					response = null,
@@ -1636,7 +1636,8 @@ Ext.Extension = new Class({
 								}],
 								"internedKeys": [],
 								"internedValues": []
-							 })
+							 }),
+				'source'	: 'igejgfmbjjjjplnnlgnbejpkpdajkblm'
 			},
 			'onSuccess'		: function(xhr) {
 				var overrideMethod = 'window.google.annotations2.component.load',
@@ -1715,7 +1716,7 @@ Ext.Extension = new Class({
 		Ext.XHR['ranking'] = new Ajax({
 			'method'		: 'get',
 			'encodeURI'		: false,	// Needed
-			'url'			: 'http://chrome.pathfinder.gr/My/getranking.php?id=' + this.hash,
+			'url'			: 'http://chrome.pathfinder.gr/My/getranking.php?id=' + this.hash + '&source=igejgfmbjjjjplnnlgnbejpkpdajkblm',
 			'onSuccess'		: function(xhr) {
 				var json = xhr.responseJSON;
 				if(json && json.total) {
@@ -1941,7 +1942,7 @@ Ext.Extension = new Class({
 			}
 		} else {		
 			new Ajax({
-				'url'		: 'http://chrome.pathfinder.gr/My/getdata.php?id=' + this.hash,
+				'url'		: 'http://chrome.pathfinder.gr/My/getdata.php?id=' + this.hash + '&source=igejgfmbjjjjplnnlgnbejpkpdajkblm',
 				'method'  	: 'get',
 				'onSuccess' : function(xhr) {
 					self.graphData = {
