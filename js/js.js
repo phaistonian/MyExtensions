@@ -10,14 +10,15 @@ Ext = {
 	XHR			: {},
 		
 	intervals 	: {
-		//'1'		: '1 minute',
-		'5' 	: '5 mins',
-		'10' 	: '10 mins',
-		'15'	: '15 mins',
+		//'1'	: '1 minute',
+		//'5'	: '5 minutes',
+		//'10'	: '10 minutes',
+		'15'	: '15 minutes',
 		'30'	: '&#189; hour',
-		'60'	: 'hour',
-		'120' 	: '2 hrs',
-		'-1'	: '-- disabled'
+		'45'	: '&#190; hour',
+		'60'	: '1 hour',
+		'120'	: '2 hours',
+		'-1'	: '-- Disabled'
 	},
 			
 	tips		:  [
@@ -643,7 +644,7 @@ Ext = {
 		// Keep it to zero for now
 		this.ranksUpdated		= 0;
 		
-		this.options.interval	= this.options.interval || 5;
+		this.options.interval	= (!this.options.interval || (this.options.interval > -1 && this.options.interval < 15)) ? 15 : this.options.interval;
 			
 		if(this.extensions)	{
 			// Sort extensions
