@@ -10,15 +10,15 @@ Ext = {
 	XHR			: {},
 		
 	intervals 	: {
-		//'1'	: '1 minute',
-		//'5'	: '5 minutes',
-		//'10'	: '10 minutes',
-		'15'	: '&#188; hour',
+		//'1'	: '1 min',
+		//'5'	: '5 mins',
+		//'10'	: '10 mins',
+		'15'	: '15 mins',
 		'30'	: '&#189; hour',
-		'45'	: '&#190; hour',
+		'45'	: '45 mins',
 		'60'	: '1 hour',
 		'120'	: '2 hours',
-		'-1'	: '-- Disabled'
+		'-1'	: '-- disabled'
 	},
 			
 	tips		:  [
