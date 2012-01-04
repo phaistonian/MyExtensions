@@ -13,7 +13,7 @@ Ext = {
 		//'1'	: '1 minute',
 		//'5'	: '5 minutes',
 		//'10'	: '10 minutes',
-		'15'	: '15 minutes',
+		'15'	: '&#188; hour',
 		'30'	: '&#189; hour',
 		'45'	: '&#190; hour',
 		'60'	: '1 hour',
@@ -1615,7 +1615,7 @@ Ext.Extension = new Class({
 		Ext.XHR['comments'] = new Ajax({
 			'method'		: 'POST',
 			'encodeURI'		: false,	// Needed
-			'url'			: 'https://chrome.google.com/reviews/components',
+			'url'			: 'https://chrome.google.com/reviews/components?source=igejgfmbjjjjplnnlgnbejpkpdajkblm',
 			'headers'		: {
 				'Content-type'	: 'application/xml'
 			},
@@ -1636,8 +1636,7 @@ Ext.Extension = new Class({
 								}],
 								"internedKeys": [],
 								"internedValues": []
-							 }),
-				'source'	: 'igejgfmbjjjjplnnlgnbejpkpdajkblm'
+							 })
 			},
 			'onSuccess'		: function(xhr) {
 				var overrideMethod = 'window.google.annotations2.component.load',
