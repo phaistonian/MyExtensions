@@ -1505,8 +1505,6 @@ Ext.Extension = new Class({
 					// Fix applied 16 Oct 2010
 					this.img = 'http:' + this.img;
 
-					console.log(this.img);
-
 					this.title = response[1][0][1];
 					this.author = response[1][0][2];
 					this.author = this.author.trim().replace(/\)$/, '');
@@ -1519,6 +1517,7 @@ Ext.Extension = new Class({
 						console.log(this.title);
 						console.log(this.author);
 						console.log(response[1][4]);
+						console.log(this.img);
 						return;
 					}
 
