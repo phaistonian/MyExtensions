@@ -1,6 +1,6 @@
 {
   "name"  		: "My Extensions",
-  "version"			: "0.9.4.6",
+  "version"			: "0.9.4.8",
   "description"		: "Are you an extensions developer? Keep track of your Chrome extensions. Be notified for new comments, ratings and more!",
   "background_page" : "background.html",
   "options_page"    : "options.html",
