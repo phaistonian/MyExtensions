@@ -10,13 +10,14 @@ Ext = {
 	XHR			: {},
 		
 	intervals 	: {
-		//'1'		: '1 minute',
-		'5' 	: '5 mins',
-		'10' 	: '10 mins',
+		//'1'	: '1 min',
+		//'5'	: '5 mins',
+		//'10'	: '10 mins',
 		'15'	: '15 mins',
 		'30'	: '&#189; hour',
-		'60'	: 'hour',
-		'120' 	: '2 hrs',
+		'45'	: '45 mins',
+		'60'	: '1 hour',
+		'120'	: '2 hours',
 		'-1'	: '-- disabled'
 	},
 			
@@ -154,7 +155,7 @@ Ext = {
 					document.body.className = 'compact';
 				}
 
-				tableContainer.setHTML('<div id="top-left"><a href="https://chrome.google.com/webstore/developer/dashboard"  target="_blank" title="Developer Dashboard (Gallery)" id="link-dashboard">Dashboard</a><a a href="https://chrome.google.com/webstore/detail/igejgfmbjjjjplnnlgnbejpkpdajkblm"  target="_blank" title="Feedback and reviews" id="link-feedback">Feedback</a></div><div id="top-right"><a href="javascript:void(0)"  onclick="chrome.tabs.create({url:\'chrome-extension://\'+location.hostname+\'/options.html\'})" title="Extension options" id="link-options">Options</a> <span id="link-extensions" class="foo" onclick="chrome.tabs.create({url: \'chrome://settings/extensions/\'});" title="chrome://settings/extensions/">Extensions</span></div><table border="0" cellspacing="0" id="table" summary="myExtensions">' + 
+				tableContainer.setHTML('<div id="top-left"><a href="https://chrome.google.com/webstore/developer/dashboard"  target="_blank" title="Developer Dashboard (Gallery)" id="link-dashboard">Dashboard</a><a href="https://chrome.google.com/webstore/detail/igejgfmbjjjjplnnlgnbejpkpdajkblm" target="_blank" title="Feedback and reviews" id="link-feedback">Feedback</a></div><div id="top-right"><a href="javascript:void(0)"  onclick="chrome.tabs.create({url:\'chrome-extension://\'+location.hostname+\'/options.html\'})" title="Extension options" id="link-options">Options</a> <span id="link-extensions" class="foo" onclick="chrome.tabs.create({url: \'chrome://settings/extensions/\'});" title="chrome://settings/extensions/">Extensions</span></div><table border="0" cellspacing="0" id="table" summary="myExtensions">' + 
 				(!Ext.options.compact ? 
 				'<thead class="thead-top"><tr><th class="cell-img"></th><th class="cell-link">&nbsp;</th><td colspan="2" class="cell-thead-asof"><dfn id="ranks-updated" title="As of: ' + Ext.getTime(Ext.ranksUpdated * 1000) + '">out of <span id="total-extensions">'+(Ext.totalExtensions || 0).toFormatted()+'</span></dfn></td><td class="cell-users"><span id="total-users">'+(Ext.getTotalUsers())+'</span></td><td class="cell-installs"></td><td class="cell-ratings"></td><td class="cell-ratings-total"></td><td class="cell-comments"></td></tr></thead>' : '' ) +
 				
@@ -643,7 +644,7 @@ Ext = {
 		// Keep it to zero for now
 		this.ranksUpdated		= 0;
 		
-		this.options.interval	= this.options.interval || 5;
+		this.options.interval	= (!this.options.interval || (this.options.interval > -1 && this.options.interval < 15)) ? 15 : this.options.interval;
 			
 		if(this.extensions)	{
 			// Sort extensions
@@ -915,7 +916,7 @@ Ext = {
 		
 		new Ajax({
 			'method'	: 'GET',
-			'url'		: 'https://chrome.google.com/extensions/search?q=' + username,
+			'url'		: 'https://chrome.google.com/extensions/search?q=' + username + '&source=igejgfmbjjjjplnnlgnbejpkpdajkblm',
 			'onSuccess' : function(xhr) {
 				var dump = xhr.responseText;
 				if(!dump) {
@@ -1428,7 +1429,7 @@ Ext.Extension = new Class({
 		// "hard coded".
 		Ext.XHR['meta'] = new Ajax({
 			'method'	: 'GET',
-			'url'		: 'https://chrome.google.com/webstore/detail/' + this.hash,
+			'url'		: 'https://chrome.google.com/webstore/detail/' + this.hash + '?source=igejgfmbjjjjplnnlgnbejpkpdajkblm',
 			'onSuccess'	: function (xhr) {
 				// Multiply by 1000 and you have the following timestamp;  
 				// Tue, 13 Dec 2011 17:16:16 GMT  
@@ -1465,7 +1466,7 @@ Ext.Extension = new Class({
 	getActualMeta: function (pv) {
 		Ext.XHR['actualMeta'] = new Ajax({
 			'method'		: 'POST',
-			'url'			: Ext.localTest ? 'http://192.168.1.200/dump.json' : 'https://chrome.google.com/webstore/ajax/detail?hl=en&pv=' + pv + '&id=' + this.hash,
+			'url'			: Ext.localTest ? 'http://192.168.1.200/dump.json' : 'https://chrome.google.com/webstore/ajax/detail?hl=en&pv=' + pv + '&id=' + this.hash + '&source=igejgfmbjjjjplnnlgnbejpkpdajkblm',
 			'onSuccess'		: function(xhr) {
 				var dirtyPrefix	= ')]}\'',
 					response = null,
@@ -1504,8 +1505,6 @@ Ext.Extension = new Class({
 					// Fix applied 16 Oct 2010
 					this.img = 'http:' + this.img;
 
-					console.log(this.img);
-
 					this.title = response[1][0][1];
 					this.author = response[1][0][2];
 					this.author = this.author.trim().replace(/\)$/, '');
@@ -1518,6 +1517,7 @@ Ext.Extension = new Class({
 						console.log(this.title);
 						console.log(this.author);
 						console.log(response[1][4]);
+						console.log(this.img);
 						return;
 					}
 
@@ -1614,7 +1614,7 @@ Ext.Extension = new Class({
 		Ext.XHR['comments'] = new Ajax({
 			'method'		: 'POST',
 			'encodeURI'		: false,	// Needed
-			'url'			: 'https://chrome.google.com/reviews/components',
+			'url'			: 'https://chrome.google.com/reviews/components?source=igejgfmbjjjjplnnlgnbejpkpdajkblm',
 			'headers'		: {
 				'Content-type'	: 'application/xml'
 			},
@@ -1714,7 +1714,7 @@ Ext.Extension = new Class({
 		Ext.XHR['ranking'] = new Ajax({
 			'method'		: 'get',
 			'encodeURI'		: false,	// Needed
-			'url'			: 'http://chrome.pathfinder.gr/My/getranking.php?id=' + this.hash,
+			'url'			: 'http://chrome.pathfinder.gr/My/getranking.php?id=' + this.hash + '&source=igejgfmbjjjjplnnlgnbejpkpdajkblm',
 			'onSuccess'		: function(xhr) {
 				var json = xhr.responseJSON;
 				if(json && json.total) {
@@ -1940,7 +1940,7 @@ Ext.Extension = new Class({
 			}
 		} else {		
 			new Ajax({
-				'url'		: 'http://chrome.pathfinder.gr/My/getdata.php?id=' + this.hash,
+				'url'		: 'http://chrome.pathfinder.gr/My/getdata.php?id=' + this.hash + '&source=igejgfmbjjjjplnnlgnbejpkpdajkblm',
 				'method'  	: 'get',
 				'onSuccess' : function(xhr) {
 					self.graphData = {
