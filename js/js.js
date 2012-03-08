@@ -905,43 +905,94 @@ Ext = {
 	},
 	
 	find		: function() {
-		var found 		= [];
-		var username 	= window.prompt('Please enter your Google username (e.g phaistonian).\n(The one you used to add your extensions to the Gallery)', Ext.username && Ext.username !== 'undefined' ? Ext.username : '');
-		if(!username) {
+		var username = window.prompt('Please enter the author name (e.g George Papdakis).\nThis can sometimes be a domain name (e.g. georgepapadakis.me).', Ext.username && Ext.username !== 'undefined' ? Ext.username : '');
+		if(!username || !(username = username.trim())) {
 			return;
 		}
-		
+
 		// Store it here
 		localStorage['username'] = Ext.username = username;
-		
-		new Ajax({
-			'method'	: 'GET',
-			'url'		: 'https://chrome.google.com/extensions/search?q=' + username + '&source=igejgfmbjjjjplnnlgnbejpkpdajkblm',
-			'onSuccess' : function(xhr) {
-				var dump = xhr.responseText;
-				if(!dump) {
-					alert('Network error, can not retrieve content. Please try again later.');
-					return;
-				}
-				var reg 		= new RegExp('<h2>.*?detail/([\\s\\S]*?)"', 'gi');
-				var matches 	= dump.match(reg);
-				
-				if(matches && matches.length) {
-					matches.each(function(match, index) {
-						var extension = match.match(/detail\/(.*?)"/i);
-						if(extension[1]) {
-							if(!Ext.exists(extension[1])) {
-								Ext.add(extension[1]);
-							}
+
+		this.getPV(function (pv) {
+			Ext.XHR['find'] = new Ajax({
+				'method'	: 'POST',
+				'url'		: 'https://chrome.google.com/webstore/ajax/item?hl=en&pv=' + pv + '&count=61&searchTerm=' + encodeURIComponent(username) + '&source=igejgfmbjjjjplnnlgnbejpkpdajkblm',
+				'onSuccess' : function(xhr) {
+					var dirtyPrefix		= ')]}\'';
+					var response		= null;
+					var responseText	= xhr.responseText ? xhr.responseText.trim() : '';
+
+					if (!responseText) {
+						alert('Network error, can not retrieve content. Please try again later.');
+						return this;
+					}
+
+					// Fix dirty JSON included in response
+					if (responseText.indexOf(dirtyPrefix) === 0) {
+						responseText = responseText.substring(dirtyPrefix.length, responseText.length);
+					}
+
+					// Fix more dirty JSON where array contains "empty" elements... bad Google!
+					responseText = responseText.replace(/,(?=,)/g, ',null');
+
+					// Attempt to parse the response
+					try {
+						response = JSON.parse(responseText);
+					} catch (e) {}
+
+					if (response && response[1] && response[1].length && response[1][0] === 'getitemsresponse') {
+						response = response[1];
+
+						if (response[1] && response[1].length) {
+							response[1].each(function(extension, index) {
+								if (extension && extension[0] && !Ext.exists(extension[0])) {
+									Ext.add(extension[0]);
+								}
+							});
+						} else {
+							alert('No extensions found for ' + username);
 						}
-						
-					});
-				} else {
-					alert('No extension found for given account');
+					}
+
+					// Nullify stuff
+					xhr = dirtyPrefix = response = responseText = null;
+					Ext.XHR['find'] = null;
 				}
-			}
+			}).send();
+		}, this);
+
+		return this;
+	},
+	
+	getPV		: function (callback, context) {
+		Ext.XHR['pv'] = new Ajax({
+			'method'	: 'GET',
+			'url'		: 'https://chrome.google.com/webstore/category/home?source=igejgfmbjjjjplnnlgnbejpkpdajkblm',
+			'onSuccess'	: function (xhr) {
+				// Multiply by 1000 and you have the following timestamp;  
+				// Thu Mar 01 2012 20:24:35 GMT+0000  
+				// To reduce the risk of breaking things I'm storing the known
+				// working value as the default in case it cannot be found.
+				var pv				= '1330633475';
+				var responseText	= xhr.responseText ? xhr.responseText.trim() : '';
+
+				if (responseText) {
+					var matches = responseText.match(/<script type="text\/javascript" src="\/webstore\/static\/(\d*)\/wall\/js\/webstore.js"><\/script>/i);
+
+					if (matches && !isNaN(parseInt(matches[1]))) {
+						pv = matches[1];
+					}
+				}
+
+				if (typeof callback === 'function') {
+					callback.call(context, pv);
+				}
+
+				pv = xhr = responseText = matches = null;
+				Ext.XHR['pv'] = null;
+			}.bind(this)
 		}).send();
-		
+
 		return this;
 	},
 	
@@ -1189,7 +1240,8 @@ Ext.Extension = new Class({
 					this.elements.version.setHTML('V: ' + this.version + isNew + (versionDT ? '<dt>' + versionDT + '</dt>' : '') );
 					this.elements.popularity.setHTML( this.ranking.popularity > 0 && this.ranking.popularity < 999999 ? this.ranking.popularity.toFormatted() : '>' + Ext.maxRank );
 					this.elements.rating.setHTML(this.ranking.rating > 0 && this.ranking.rating < 999999  ? this.ranking.rating.toFormatted() : '>' + Ext.maxRank);
-					this.elements.users.setHTML((this.users.total || 0).toFormatted(','));
+					var usersTotal = (this.users.total || 0).toFormatted(',');
+					this.elements.users.setHTML(usersTotal + (usersTotal === '1,000,000' ? '+' : ''));
 					this.elements.installs.setHTML((this.installs.total || 0).toFormatted(','));
 				}  else {
 					
@@ -1305,7 +1357,7 @@ Ext.Extension = new Class({
 			if(!Ext.options.compact) {
 				html.push('<td title="'+this.hash+'" class="ranking cell-rank-popularity">' + (this.ranking.popularity > 0 && this.ranking.popularity < 999999  ? Number((this.ranking.popularity || 0).toString().replace(/,/, '').toInt()).toFormatted(',')  : '>' + Ext.maxRank) +  '</td>');
 				html.push('<td title="'+this.hash+'" class="ranking cell-rank-rating">' + (this.ranking.rating > 0 && this.ranking.rating < 999999 ? Number((this.ranking.rating || 0).toString().replace(/,/, '').toInt()).toFormatted(',') : '>'+ Ext.maxRank) +  '</td>'); 		
-				//html.push('<td class="cell-users" title="'+this.hash+'"><div>' + Number((this.users.total || 0).toString().replace(/,/, '').toInt()).toFormatted(',') +  '</div></td>'); 		
+				//html.push('<td class="cell-users" title="'+this.hash+'"><div>' + Number((this.users.total || 0).toString().replace(/,/g, '').toInt()).toFormatted(',') +  '</div></td>'); 		
 				
 				
 				var diff 	= this.users && this.users.previous ? this.users.total - this.users.previous : 0;
@@ -1316,7 +1368,8 @@ Ext.Extension = new Class({
 					title = diff > 0  ? '+' + diff.toFormatted(',') : diff.toFormatted(',');
 				}
 				
-				html.push('<td class="cell-users'+_class+'" title="'+title+'"><div>' + Number((this.users.total || 0).toString().replace(/,/, '').toInt()).toFormatted(',') +  '</div></td>'); 		
+				var usersTotal = Number((this.users.total || 0).toString().replace(/,/g, '').toInt()).toFormatted(',');
+				html.push('<td class="cell-users'+_class+'" title="'+title+'"><div>' + usersTotal + (usersTotal === '1,000,000' ? '+' : '') +  '</div></td>'); 		
 				// Installs
 				// title="'+(this.installs && this.installs.previous && this.installs.previous != this.installs.total ? 'Was '+this.installs.previous : '')+'"
 				html.push('<td class="cell-installs" ><div>' + Number((this.installs.total || 0).toString().replace(/,/, '').toInt()).toFormatted(',') + '</div></td>'); 		// Installs
@@ -1420,192 +1473,152 @@ Ext.Extension = new Class({
 	},
 
 	getMeta		: function () {
-		// Without `pv` parameter the actual meta call gets a 441 error
-		// response and appears to only accept a specific value, as far as I
-		// can tell and using `Math.round((new Date) / 1000)` to generate a
-		// similar timestamp didn't work, unfortunately. In an attempt to be
-		// future-proof I'm extracting this value from the HTML of the
-		// extension's detail page, as this is the only place I can see it is
-		// "hard coded".
-		Ext.XHR['meta'] = new Ajax({
-			'method'	: 'GET',
-			'url'		: 'https://chrome.google.com/webstore/detail/' + this.hash + '?source=igejgfmbjjjjplnnlgnbejpkpdajkblm',
-			'onSuccess'	: function (xhr) {
-				// Multiply by 1000 and you have the following timestamp;  
-				// Tue, 13 Dec 2011 17:16:16 GMT  
-				// To reduce the risk of breaking things I'm storing the known
-				// working value as the default in case it cannot be found.
-				var pv = '1323796576',
-					responseText = xhr.responseText ? xhr.responseText.trim() : '';
+		Ext.getPV(function (pv) {
+			Ext.XHR['meta'] = new Ajax({
+				'method'		: 'POST',
+				'url'			: Ext.localTest ? 'http://192.168.1.200/dump.json' : 'https://chrome.google.com/webstore/ajax/detail?hl=en&pv=' + pv + '&id=' + this.hash + '&source=igejgfmbjjjjplnnlgnbejpkpdajkblm',
+				'onSuccess'		: function(xhr) {
+					var dirtyPrefix		= ')]}\'';
+					var response		= null;
+					var responseText	= xhr.responseText ? xhr.responseText.trim() : '';
 
-				if (!responseText) {
-					if (Ext.inOptions) {
-						alert('Unable to retrieve data. Please try again later.');
-					}
+					if (!responseText) {
+						if (Ext.inOptions) {
+							alert('Unable to retrieve data. Please try again later.');
+						}
 
-					this.remove();
-					return this;
-				}
-
-				var matches = responseText.match(/<script type="text\/javascript" src="\/webstore\/static\/(\d*)\/wall\/js\/webstore.js"><\/script>/i);
-
-				if (matches && matches.length) {
-					pv = matches[1];
-				}
-
-				this.getActualMeta(pv);
-
-				pv = xhr = responseText = matches = null;
-				Ext.XHR['meta'] = null;
-			}.bind(this)
-		}).send();
-
-		return this;
-	},
-
-	getActualMeta: function (pv) {
-		Ext.XHR['actualMeta'] = new Ajax({
-			'method'		: 'POST',
-			'url'			: Ext.localTest ? 'http://192.168.1.200/dump.json' : 'https://chrome.google.com/webstore/ajax/detail?hl=en&pv=' + pv + '&id=' + this.hash + '&source=igejgfmbjjjjplnnlgnbejpkpdajkblm',
-			'onSuccess'		: function(xhr) {
-				var dirtyPrefix	= ')]}\'',
-					response = null,
-					responseText = xhr.responseText ? xhr.responseText.trim() : '';
-
-				if (!responseText) {
-					if (Ext.inOptions) {
-						alert('Unable to retrieve data. Please try again later.');
-					}
-
-					this.remove();
-					return this;
-				}
-
-				// Fix dirty JSON included in response
-				if (responseText.indexOf(dirtyPrefix) === 0) {
-					responseText = responseText.substring(dirtyPrefix.length, responseText.length);
-				}
-
-				// Fix more dirty JSON where array contains "empty" elements... bad Google!
-				responseText = responseText.replace(/,(?=,)/g, ',null');
-
-				// Attempt to parse the response
-				try {
-					response = JSON.parse(responseText);
-				} catch (e) {}
-
-				if (response && response[1] && response[1].length && response[1][0] === 'getitemdetailresponse') {
-					response = response[1];
-					this.img = response[1][0][3];
-
-					if (this.img.indexOf('url(/extensions') !== -1) {
-						this.img = this.img.replace(/url\(\/extensions/, 'url(https://chrome.google.com/extensions');
-					}
-
-					// Fix applied 16 Oct 2010
-					this.img = 'http:' + this.img;
-
-					this.title = response[1][0][1];
-					this.author = response[1][0][2];
-					this.author = this.author.trim().replace(/\)$/, '');
-
-					// CHANGED: 16.01.2010
-					// Those changes are mae in order to support down/up references.
-					var currentTotal = this.users.total;
-
-					if (Ext.localTest) {
-						console.log(this.title);
-						console.log(this.author);
-						console.log(response[1][4]);
-						console.log(this.img);
-						return;
-					}
-
-					this.users = this.users || {};
-					this.users.total = Number(response[1][4].replace(/,/, ''));
-
-					if (parseInt(currentTotal) === parseInt(this.users.total)) {
-						this.users.previous = this.users.previous || null;
-					} else {
-						this.users.previous = currentTotal;
-						// We are going to need this later
-						this.metaUpdated = new Date().getTime();
-					}
-
-					if (0) {
-						console.log('USERS REPORT');
-						console.log('TOTAL: ' + this.users.total);
-						console.log('PREVIOUS: ' + this.users.previous);
-					}
-
-					this.version = response[1][6];
-
-					var currentAverage = this.ratings.average;
-
-					// Update ratings
-					this.ratings = this.ratings || {};
-					this.ratings.average	= response[1][0][12] || 0,
-					this.ratings.total		= Number((response[1][0][22] || 0).toString().replace(/,/, '').toInt());
-					this.ratings.stars		= this.ratings.stars || 0;
-					this.ratings.previous	= this.ratings.total || null;
-					this.ratings['new']		= this.ratings['new'] || false;
-
-					if (currentAverage === this.ratings.average) {
-						this.ratings.previousAverage = this.ratings.previousAverage || null;
-					} else {
-						this.ratings.previousAverage = currentAverage;
-					}
-
-					// Extra care :)
-					if (this.ratings.total && this.ratings.previous === 0) {
-						this.ratings['new'] = true;
-					}
-
-					// New rating
-					if (this.ratings.total && this.ratings.previous && (this.ratings.total !== this.ratings.previous)) {
-						this.ratings['new'] = true;
-					}
-
-					// TESTING
-					// this.ratings['new'] = true;
-
-					this.handleRatings();
-
-					Ext.store();
-
-					Ext.sendRequest({
-						'action': 'update',
-						'instance': this
-					});
-
-					if (Ext.inOptions) {
-						this.update();
-					}
-
-					if (Ext.localTest) {
-						console.log(this.users);
-						console.log('done local test');
-						throw (1);
+						this.remove();
 						return this;
 					}
 
-					// Nullify stuff
-					json = xhr = dirtyPrefix = response = responseText = currentTotal = currentAverage = null;
-					// Next step
-					this.getComments();
-				} else {
-					// If we have a title already, its just a network issue
-					if (!this.title || !this.version ||  this.title === 'undefined') {
-						alert('Extension id seems to be invalid ;(');
-						this.remove();	
-					} else {
-						// Network failure
+					// Fix dirty JSON included in response
+					if (responseText.indexOf(dirtyPrefix) === 0) {
+						responseText = responseText.substring(dirtyPrefix.length, responseText.length);
 					}
 
-					Ext.XHR['actualMeta'] = null;
-				}
-			}.bind(this)
-		}).send();
+					// Fix more dirty JSON where array contains "empty" elements... bad Google!
+					responseText = responseText.replace(/,(?=,)/g, ',null');
+
+					// Attempt to parse the response
+					try {
+						response = JSON.parse(responseText);
+					} catch (e) {}
+
+					if (response && response[1] && response[1].length && response[1][0] === 'getitemdetailresponse') {
+						response = response[1];
+						this.img = response[1][0][3];
+
+						if (this.img.indexOf('url(/extensions') !== -1) {
+							this.img = this.img.replace(/url\(\/extensions/, 'url(https://chrome.google.com/extensions');
+						}
+
+						// Fix applied 16 Oct 2010
+						this.img = 'http:' + this.img;
+
+						this.title = response[1][0][1];
+						this.author = response[1][0][2];
+						this.author = this.author.trim().replace(/\)$/, '');
+
+						// CHANGED: 16.01.2010
+						// Those changes are mae in order to support down/up references.
+						var currentTotal = this.users.total;
+
+						if (Ext.localTest) {
+							console.log(this.title);
+							console.log(this.author);
+							console.log(response[1][4]);
+							console.log(this.img);
+							return;
+						}
+
+						this.users = this.users || {};
+						this.users.total = Number(response[1][4].replace(/,/g, '').replace(/\+/g, ''));
+
+						if (parseInt(currentTotal) === parseInt(this.users.total)) {
+							this.users.previous = this.users.previous || null;
+						} else {
+							this.users.previous = currentTotal;
+							// We are going to need this later
+							this.metaUpdated = new Date().getTime();
+						}
+
+						if (0) {
+							console.log('USERS REPORT');
+							console.log('TOTAL: ' + this.users.total);
+							console.log('PREVIOUS: ' + this.users.previous);
+						}
+
+						this.version = response[1][6];
+
+						var currentAverage = this.ratings.average;
+
+						// Update ratings
+						this.ratings = this.ratings || {};
+						this.ratings.average	= response[1][0][12] || 0,
+						this.ratings.total		= Number((response[1][0][22] || 0).toString().replace(/,/, '').toInt());
+						this.ratings.stars		= this.ratings.stars || 0;
+						this.ratings.previous	= this.ratings.total || null;
+						this.ratings['new']		= this.ratings['new'] || false;
+
+						if (currentAverage === this.ratings.average) {
+							this.ratings.previousAverage = this.ratings.previousAverage || null;
+						} else {
+							this.ratings.previousAverage = currentAverage;
+						}
+
+						// Extra care :)
+						if (this.ratings.total && this.ratings.previous === 0) {
+							this.ratings['new'] = true;
+						}
+
+						// New rating
+						if (this.ratings.total && this.ratings.previous && (this.ratings.total !== this.ratings.previous)) {
+							this.ratings['new'] = true;
+						}
+
+						// TESTING
+						// this.ratings['new'] = true;
+
+						this.handleRatings();
+
+						Ext.store();
+
+						Ext.sendRequest({
+							'action': 'update',
+							'instance': this
+						});
+
+						if (Ext.inOptions) {
+							this.update();
+						}
+
+						if (Ext.localTest) {
+							console.log(this.users);
+							console.log('done local test');
+							throw (1);
+							return this;
+						}
+
+						// Nullify stuff
+						currentTotal = currentAverage = null;
+						// Next step
+						this.getComments();
+					} else {
+						// If we have a title already, its just a network issue
+						if (!this.title || !this.version ||  this.title === 'undefined') {
+							alert('Extension id seems to be invalid ;(');
+							this.remove();	
+						} else {
+							// Network failure
+						}
+					}
+
+					// Nullify stuff
+					xhr = dirtyPrefix = response = responseText = null;
+					Ext.XHR['meta'] = null;
+				}.bind(this)
+			}).send();
+		}, this);
 		
 		return this;
 	},
