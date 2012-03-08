@@ -979,7 +979,7 @@ Ext = {
 				if (responseText) {
 					var matches = responseText.match(/<script type="text\/javascript" src="\/webstore\/static\/(\d*)\/wall\/js\/webstore.js"><\/script>/i);
 
-					if (matches && isNaN(parseInt(matches[1]))) {
+					if (matches && !isNaN(parseInt(matches[1]))) {
 						pv = matches[1];
 					}
 				}
