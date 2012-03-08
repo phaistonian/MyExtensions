@@ -916,7 +916,6 @@ Ext = {
 		this.getPV(function (pv) {
 			Ext.XHR['find'] = new Ajax({
 				'method'	: 'POST',
-				// https://chrome.google.com/webstore/ajax/item?hl=en&gl=GB&pv=1330633475&count=61&marquee=false&category=home&searchTerm=George%20Papdakis&sortBy=0&_reqid=33254&rt=j
 				'url'		: 'https://chrome.google.com/webstore/ajax/item?hl=en&pv=' + pv + '&count=61&searchTerm=' + encodeURIComponent(username) + '&source=igejgfmbjjjjplnnlgnbejpkpdajkblm',
 				'onSuccess' : function(xhr) {
 					var dirtyPrefix		= ')]}\'';
