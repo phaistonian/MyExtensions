@@ -232,6 +232,7 @@ table.table-options th {
 
 #empty {
 	font-size: 15px;
+	padding-top: 25px;
 	text-align: center;
 }
 td {
