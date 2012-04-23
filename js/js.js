@@ -1476,7 +1476,7 @@ Ext.Extension = new Class({
 		Ext.getPV(function (pv) {
 			Ext.XHR['meta'] = new Ajax({
 				'method'		: 'POST',
-				'url'			: Ext.localTest ? 'http://192.168.1.200/dump.json' : 'https://chrome.google.com/webstore/ajax/detail?hl=en&pv=' + pv + '&id=' + this.hash + '&source=igejgfmbjjjjplnnlgnbejpkpdajkblm',
+				'url'			: Ext.localTest ? 'http://192.168.1.200/dump.json' : 'https://chrome.google.com/webstore/ajax/detail?hl=en&pv=' + pv + '&mce=ctm%2Cac%2Ccse%2Chot%2Ceuf%2Cfii%2Crab%2Ctcb%2Cbdg%2Chmh%2Cwtr%2Cdhp&id=' + this.hash + '&rt=j&source=igejgfmbjjjjplnnlgnbejpkpdajkblm',
 				'onSuccess'		: function(xhr) {
 					var dirtyPrefix		= ')]}\'';
 					var response		= null;
@@ -1504,16 +1504,13 @@ Ext.Extension = new Class({
 						response = JSON.parse(responseText);
 					} catch (e) {}
 
-					if (response && response[1] && response[1].length && response[1][0] === 'getitemdetailresponse') {
-						response = response[1];
+					if (response && response[0] && response[0][1] && response[0][1].length && response[0][1][0] === 'getitemdetailresponse') {
+						response = response[0][1];
 						this.img = response[1][0][3];
 
 						if (this.img.indexOf('url(/extensions') !== -1) {
 							this.img = this.img.replace(/url\(\/extensions/, 'url(https://chrome.google.com/extensions');
 						}
-
-						// Fix applied 16 Oct 2010
-						this.img = 'http:' + this.img;
 
 						this.title = response[1][0][1];
 						this.author = response[1][0][2];
