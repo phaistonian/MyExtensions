@@ -913,32 +913,17 @@ Ext = {
 		// Store it here
 		localStorage['username'] = Ext.username = username;
 
-		this.getPV(function (pv) {
+		this.getRequired(function (req) {
 			Ext.XHR['find'] = new Ajax({
 				'method'	: 'POST',
-				'url'		: 'https://chrome.google.com/webstore/ajax/item?hl=en&pv=' + pv + '&count=61&searchTerm=' + encodeURIComponent(username) + '&source=igejgfmbjjjjplnnlgnbejpkpdajkblm',
+				'url'		: 'https://chrome.google.com/webstore/ajax/item?hl=en&pv=' + req.pv + '&count=61&searchTerm=' + encodeURIComponent(username) + '&source=igejgfmbjjjjplnnlgnbejpkpdajkblm',
 				'onSuccess' : function(xhr) {
-					var dirtyPrefix		= ')]}\'';
-					var response		= null;
-					var responseText	= xhr.responseText ? xhr.responseText.trim() : '';
+					var response = Ext.parseJSON(xhr.responseText);
 
-					if (!responseText) {
+					if (!response) {
 						alert('Network error, can not retrieve content. Please try again later.');
 						return this;
 					}
-
-					// Fix dirty JSON included in response
-					if (responseText.indexOf(dirtyPrefix) === 0) {
-						responseText = responseText.substring(dirtyPrefix.length, responseText.length);
-					}
-
-					// Fix more dirty JSON where array contains "empty" elements... bad Google!
-					responseText = responseText.replace(/,(?=,)/g, ',null');
-
-					// Attempt to parse the response
-					try {
-						response = JSON.parse(responseText);
-					} catch (e) {}
 
 					if (response && response[1] && response[1].length && response[1][0] === 'getitemsresponse') {
 						response = response[1];
@@ -955,41 +940,87 @@ Ext = {
 					}
 
 					// Nullify stuff
-					xhr = dirtyPrefix = response = responseText = null;
+					xhr = response = null;
 					Ext.XHR['find'] = null;
 				}
-			}).send();
+			}).send(req.t ? ('t=' + encodeURIComponent(req.t) + '&') : null);
 		}, this);
 
 		return this;
 	},
 	
-	getPV		: function (callback, context) {
-		Ext.XHR['pv'] = new Ajax({
+	parseJSON	: function (text) {
+		var dirty	= ')]}\'';
+		var json	= null;
+		text		= text && text.trim();
+
+		if (text) {
+			// Fix dirty JSON included in text
+			if (text.indexOf(dirty) === 0) {
+				text = text.substring(dirty.length, text.length);
+			}
+
+			// Fix more dirty JSON where array contains "empty" elements... bad Google!
+			text = text.replace(/,(?=,)/g, ',null');
+
+			// Attempt to parse the JSON
+			try {
+				json = JSON.parse(text);
+			} catch (e) {}
+		}
+
+		return json;
+	},
+	
+	getRequired	: function (callback, context) {
+		Ext.XHR['required'] = new Ajax({
 			'method'	: 'GET',
 			'url'		: 'https://chrome.google.com/webstore/category/home?source=igejgfmbjjjjplnnlgnbejpkpdajkblm',
 			'onSuccess'	: function (xhr) {
+				var mce				= [];
 				// Multiply by 1000 and you have the following timestamp;  
-				// Thu Mar 01 2012 20:24:35 GMT+0000  
+				// Thu Apr 19 2012 00:10:54 GMT+0100  
 				// To reduce the risk of breaking things I'm storing the known
 				// working value as the default in case it cannot be found.
-				var pv				= '1330633475';
+				var pv				= '1334790654';
+				var t				= null;
 				var responseText	= xhr.responseText ? xhr.responseText.trim() : '';
 
 				if (responseText) {
-					var matches = responseText.match(/<script type="text\/javascript" src="\/webstore\/static\/(\d*)\/wall\/js\/webstore.*?"><\/script>/i);
+					var matches = responseText.match(/<script type="text\/javascript">var WS_session =([\s\S]*?);var WS_data =([\s\S]*?);var/i);
 
-					if (matches && !isNaN(parseInt(matches[1]))) {
-						pv = matches[1];
+					if (matches && matches.length === 3) {
+						var data = this.parseJSON(matches[1]);
+
+						if (data && data.length) {
+							if ('string' === typeof data[10]) t = data[10];
+							if (data[11] && data[11].length) {
+								data[11].forEach(function (flag) {
+									if (flag[1] && flag[1].toLowerCase() === 'on') {
+										mce.push(flag[0]);
+									}
+								});
+							}
+						}
+
+						data = this.parseJSON(matches[2]);
+
+						if (data && data.length && !isNaN(parseInt(data[10]))) {
+							pv = data[10];
+						}
 					}
 				}
 
-				if (typeof callback === 'function') {
-					callback.call(context, pv);
+				if ('function' === typeof callback) {
+					callback.call(context, {
+						mce	: mce.join(','),
+						pv	: pv,
+						t	: t
+					});
 				}
 
-				pv = xhr = responseText = matches = null;
-				Ext.XHR['pv'] = null;
+				mce = pv = t = xhr = responseText = matches = data = null;
+				Ext.XHR['required'] = null;
 			}.bind(this)
 		}).send();
 
@@ -1473,16 +1504,14 @@ Ext.Extension = new Class({
 	},
 
 	getMeta		: function () {
-		Ext.getPV(function (pv) {
+		Ext.getRequired(function (req) {
 			Ext.XHR['meta'] = new Ajax({
 				'method'		: 'POST',
-				'url'			: Ext.localTest ? 'http://192.168.1.200/dump.json' : 'https://chrome.google.com/webstore/ajax/detail?hl=en&pv=' + pv + '&mce=ctm%2Cac%2Ccse%2Chot%2Ceuf%2Cfii%2Crab%2Ctcb%2Cbdg%2Chmh%2Cwtr%2Cdhp&id=' + this.hash + '&rt=j&source=igejgfmbjjjjplnnlgnbejpkpdajkblm',
+				'url'			: Ext.localTest ? 'http://192.168.1.200/dump.json' : 'https://chrome.google.com/webstore/ajax/detail?hl=en&pv=' + req.pv + '&mce=' + encodeURIComponent(req.mce) + '&id=' + this.hash + '&rt=j&source=igejgfmbjjjjplnnlgnbejpkpdajkblm',
 				'onSuccess'		: function(xhr) {
-					var dirtyPrefix		= ')]}\'';
-					var response		= null;
-					var responseText	= xhr.responseText ? xhr.responseText.trim() : '';
+					var response = Ext.parseJSON(xhr.responseText);
 
-					if (!responseText) {
+					if (!response) {
 						if (Ext.inOptions) {
 							alert('Unable to retrieve data. Please try again later.');
 						}
@@ -1490,19 +1519,6 @@ Ext.Extension = new Class({
 						this.remove();
 						return this;
 					}
-
-					// Fix dirty JSON included in response
-					if (responseText.indexOf(dirtyPrefix) === 0) {
-						responseText = responseText.substring(dirtyPrefix.length, responseText.length);
-					}
-
-					// Fix more dirty JSON where array contains "empty" elements... bad Google!
-					responseText = responseText.replace(/,(?=,)/g, ',null');
-
-					// Attempt to parse the response
-					try {
-						response = JSON.parse(responseText);
-					} catch (e) {}
 
 					if (response && response[0] && response[0][1] && response[0][1].length && response[0][1][0] === 'getitemdetailresponse') {
 						response = response[0][1];
@@ -1611,10 +1627,10 @@ Ext.Extension = new Class({
 					}
 
 					// Nullify stuff
-					xhr = dirtyPrefix = response = responseText = null;
+					xhr = response = null;
 					Ext.XHR['meta'] = null;
 				}.bind(this)
-			}).send();
+			}).send(req.t ? ('t=' + encodeURIComponent(req.t) + '&') : null);
 		}, this);
 		
 		return this;
