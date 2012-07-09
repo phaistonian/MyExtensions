@@ -978,16 +978,16 @@ Ext = {
 			'url'		: 'https://chrome.google.com/webstore/category/home?source=igejgfmbjjjjplnnlgnbejpkpdajkblm',
 			'onSuccess'	: function (xhr) {
 				var mce				= [];
-				// Multiply by 1000 and you have the following timestamp;  
-				// Thu Apr 19 2012 00:10:54 GMT+0100  
+				// Multiply by 1000 and you have the following timestamp;
+				// Fri Jun 29 2012 23:17:11 GMT+0100
 				// To reduce the risk of breaking things I'm storing the known
 				// working value as the default in case it cannot be found.
-				var pv				= '1334790654';
+				var pv				= '1341008231';
 				var t				= null;
 				var responseText	= xhr.responseText ? xhr.responseText.trim() : '';
 
 				if (responseText) {
-					var matches = responseText.match(/<script type="text\/javascript">var WS_session =([\s\S]*?);var WS_data =([\s\S]*?);var/i);
+					var matches = responseText.match(/<script type="application\/json" id="cws-session-data">([\s\S]*?)<\/script><script type="application\/json" id="cws-model-data">([\s\S]*?)<\/script>/i);
 
 					if (matches && matches.length === 3) {
 						var data = this.parseJSON(matches[1]);
