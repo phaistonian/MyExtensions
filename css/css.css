@@ -21,7 +21,6 @@ thead th, thead td {
 	color: #999;
 	padding-top: 5px;
 	}
-
 h3 {
 	margin: 0;
 }
@@ -193,6 +192,7 @@ td.ranking {
 
 a{ 
 	color: #2251A6;
+	cursor: pointer;
 	}
 
 
@@ -275,6 +275,7 @@ td div {
 	
 #form table {
 	border-collapse: collapse;
+	border-spacing: 0;
 	border: 1px solid #ddd;
 	table-layout: auto;
 	}
@@ -536,3 +537,7 @@ tr.featured th span.featured {
 .down {
 	color: red;
 	}
+
+.hide {
+	display: none;
+}
