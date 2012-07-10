@@ -52,25 +52,25 @@ Ext = {
 			checkboxes.each(function(checkbox, index) {
 				checkbox.addEventListener('change', function(event) {
 					if(checkbox == checkboxes[0]) {
-						options.notify.ratings = !!checkbox.checked
+						options.notify.ratings = !!checkbox.checked;
 					}
 					
 					if(checkbox == checkboxes[1]) {
-						options.notify.comments = !!checkbox.checked
+						options.notify.comments = !!checkbox.checked;
 					}
 					
 					if(checkbox == checkboxes[2]) {
-						options.desktop.ratings = !!checkbox.checked
+						options.desktop.ratings = !!checkbox.checked;
 					}
 					
 					if(checkbox == checkboxes[3]) {
-						options.desktop.comments = !!checkbox.checked
+						options.desktop.comments = !!checkbox.checked;
 					}
 
 										
 									
 					if(checkbox == checkboxes[4]) {
-						options.compact = !!checkbox.checked
+						options.compact = !!checkbox.checked;
 					}
 					
 					
@@ -146,7 +146,10 @@ Ext = {
 		if(!this.extensions || this.getTotal() === 0) {
 			if(this.inPopup) {
 				//tableContainer.setHTML('<div id="empty"><h3>Aw Snap!</h3><p>It seems, you have not defined your extensions yet.</p><p>Go to the <a href="'+chrome.extension.getURL('options.hml')+'" target="_blank" title="Options">options page</a> to add them.</p></div>');
-				tableContainer.setHTML('<div id="empty"><h3>Aw Snap!</h3><p>It seems, you have not defined your extensions yet.</p><p>Go to the <a href="javascript:void(0)" onclick="chrome.tabs.create({url:\'chrome-extension://\'+location.hostname+\'/options.html\'})">options page</a> to add them.</p></div>');
+				tableContainer.setHTML('<div id="empty"><h3>Aw Snap!</h3><p>It seems, you have not defined your extensions yet.</p><p>Go to the <a id="link-options">options page</a> to add them.</p></div>');
+				$('link-options').addEventListener('click', function() {
+					chrome.tabs.create({url: chrome.extension.getURL('options.html')});
+				});
 			}
 		} else {
 			if(this.inPopup) {
@@ -155,16 +158,24 @@ Ext = {
 					document.body.className = 'compact';
 				}
 
-				tableContainer.setHTML('<div id="top-left"><a href="https://chrome.google.com/webstore/developer/dashboard"  target="_blank" title="Developer Dashboard (Gallery)" id="link-dashboard">Dashboard</a><a href="https://chrome.google.com/webstore/detail/igejgfmbjjjjplnnlgnbejpkpdajkblm" target="_blank" title="Feedback and reviews" id="link-feedback">Feedback</a></div><div id="top-right"><a href="javascript:void(0)"  onclick="chrome.tabs.create({url:\'chrome-extension://\'+location.hostname+\'/options.html\'})" title="Extension options" id="link-options">Options</a> <span id="link-extensions" class="foo" onclick="chrome.tabs.create({url: \'chrome://settings/extensions/\'});" title="chrome://settings/extensions/">Extensions</span></div><table border="0" cellspacing="0" id="table" summary="myExtensions">' + 
-				(!Ext.options.compact ? 
-				'<thead class="thead-top"><tr><th class="cell-img"></th><th class="cell-link">&nbsp;</th><td colspan="2" class="cell-thead-asof"><dfn id="ranks-updated" title="As of: ' + Ext.getTime(Ext.ranksUpdated * 1000) + '">out of <span id="total-extensions">'+(Ext.totalExtensions || 0).toFormatted()+'</span></dfn></td><td class="cell-users"><span id="total-users">'+(Ext.getTotalUsers())+'</span></td><td class="cell-installs"></td><td class="cell-ratings"></td><td class="cell-ratings-total"></td><td class="cell-comments"></td></tr></thead>' : '' ) +
-				
-				(!Ext.options.compact ? 
-				'<thead><th class="cell-img"></th><th class="sort sort-asc cell-link">Extension or Theme</th><td class="cell-rank-popularity sort">Popularity</td><td class="cell-rank-rating sort">Ranking<td class="cell-users sort"><dfn title="(Weekly) Computed from update pings in the last week">Users</dfn></td><td class="cell-installs sort"><dfn title="Number of installs in the last week">Installs</dfn></td><td colspan="2" style="text-align: center; sort" class="sort cell-thead-ratings">Ratings</td><td class="cell-comments sort"><img src="img/cell-feedback.png" /></td></tr></thead>'  : 
-				'<thead><th class="cell-img"></th><th class="sort sort-asc cell-link">Extension or Theme</th><td colspan="2" style="text-align: center;width: 135px;" class="sort cell-thead-version">Version</td><td colspan="2" style="text-align: center;" class="sort cell-thead-ratings">Ratings</td><td class="cell-comments sort"><img src="img/cell-feedback.png" /></td></tr></thead>' ) +
-				
-				
-				'<tbody></tbody></table><span id="update"><div style="color: #999;overflow: hidden;margin-top: 10px;"><span style="float: left;"><button onclick="Ext.Bg.update()" title="Update extensions now" id="update-now">update now</button>  <span class="foo" id="mark" onclick="Ext.seen()">Reset badges</span></span><div style="float: right; margin-top: 5px;">' + (!Ext.options.compact && this.options.interval != -1 ? 'Auto updates every '+this.intervals[this.options.interval]+' - ' : '') +  '<span id="last-updated"></span></div></div><div id="tip">TIP: '+Ext.tips[ Math.floor(Math.random() * Ext.tips.length) ]+'</div>');
+				tableContainer.setHTML('<div id="top-left"><a href="https://chrome.google.com/webstore/developer/dashboard"  target="_blank" title="Developer Dashboard (Gallery)" id="link-dashboard">Dashboard</a><a href="https://chrome.google.com/webstore/detail/igejgfmbjjjjplnnlgnbejpkpdajkblm" target="_blank" title="Feedback and reviews" id="link-feedback">Feedback</a></div><div id="top-right"><a title="Extension options" id="link-options">Options</a> <span id="link-extensions" class="foo" title="chrome://chrome/extensions/">Extensions</span></div><table border="0" cellspacing="0" id="table" summary="myExtensions">' +
+					(Ext.options.compact
+						? '<thead><th class="cell-img"></th><th class="sort sort-asc cell-link">Extension or Theme</th><td colspan="2" style="text-align: center;width: 135px;" class="sort cell-thead-version">Version</td><td colspan="2" style="text-align: center;" class="sort cell-thead-ratings">Ratings</td><td class="cell-comments sort"><img src="img/cell-feedback.png"></td></tr></thead>'
+						: '<thead class="thead-top"><tr><th class="cell-img"></th><th class="cell-link">&nbsp;</th><td colspan="2" class="cell-thead-asof"><dfn id="ranks-updated" title="As of: ' + Ext.getTime(Ext.ranksUpdated * 1000) + '">out of <span id="total-extensions">' + (Ext.totalExtensions || 0).toFormatted() + '</span></dfn></td><td class="cell-users"><span id="total-users">' + Ext.getTotalUsers() + '</span></td><td class="cell-installs"></td><td class="cell-ratings"></td><td class="cell-ratings-total"></td><td class="cell-comments"></td></tr></thead>' +
+						  '<thead><th class="cell-img"></th><th class="sort sort-asc cell-link">Extension or Theme</th><td class="cell-rank-popularity sort">Popularity</td><td class="cell-rank-rating sort">Ranking<td class="cell-users sort"><dfn title="(Weekly) Computed from update pings in the last week">Users</dfn></td><td class="cell-installs sort"><dfn title="Number of installs in the last week">Installs</dfn></td><td colspan="2" style="text-align: center; sort" class="sort cell-thead-ratings">Ratings</td><td class="cell-comments sort"><img src="img/cell-feedback.png"></td></tr></thead>') +
+					'<tbody></tbody></table><span id="update"><div style="color: #999;overflow: hidden;margin-top: 10px;"><span style="float: left;"><button title="Update extensions now" id="update-now">update now</button>  <span class="foo" id="mark">Reset badges</span></span><div style="float: right; margin-top: 5px;">' + (!Ext.options.compact && this.options.interval !== -1 ? 'Auto updates every ' + this.intervals[this.options.interval] + ' - ' : '') + '<span id="last-updated"></span></div></div><div id="tip">TIP: ' + Ext.tips[Math.floor(Math.random() * Ext.tips.length)] + '</div>');
+				$('link-options').addEventListener('click', function() {
+					chrome.tabs.create({url: chrome.extension.getURL('options.html')});
+				});
+				$('link-extensions').addEventListener('click', function() {
+					chrome.tabs.create({url: 'chrome://chrome/extensions/'});
+				});
+				$('mark').addEventListener('click', function() {
+					Ext.seen();
+				});
+				$('update-now').addEventListener('click', function() {
+					Ext.Bg.update();
+				});
 				
 				// Nifty trick ;p
 				var limit =  this.options.compact ?  15 : 10;
@@ -404,7 +415,7 @@ Ext = {
 			// Plain irst
 			if( 0 )
 			document.body.getElements('thead dfn').each(function(element, index) {
-				Ext.tooltips['plain'].push(new Tooltip(element, element.title.replace(/\n/gi, '<br />') ) );
+				Ext.tooltips['plain'].push(new Tooltip(element, element.title.replace(/\n/gi, '<br>') ) );
 			});
 			
 			// Delayed is better
@@ -977,6 +988,8 @@ Ext = {
 			'method'	: 'GET',
 			'url'		: 'https://chrome.google.com/webstore/category/home?source=igejgfmbjjjjplnnlgnbejpkpdajkblm',
 			'onSuccess'	: function (xhr) {
+				var data			= null;
+				var matches			= null;
 				var mce				= [];
 				// Multiply by 1000 and you have the following timestamp;
 				// Fri Jun 29 2012 23:17:11 GMT+0100
@@ -987,10 +1000,10 @@ Ext = {
 				var responseText	= xhr.responseText ? xhr.responseText.trim() : '';
 
 				if (responseText) {
-					var matches = responseText.match(/<script type="application\/json" id="cws-session-data">([\s\S]*?)<\/script><script type="application\/json" id="cws-model-data">([\s\S]*?)<\/script>/i);
+					matches = responseText.match(/<script type="application\/json" id="cws-session-data">([\s\S]*?)<\/script><script type="application\/json" id="cws-model-data">([\s\S]*?)<\/script>/i);
 
 					if (matches && matches.length === 3) {
-						var data = this.parseJSON(matches[1]);
+						data = this.parseJSON(matches[1]);
 
 						if (data && data.length) {
 							if ('string' === typeof data[10]) t = data[10];
@@ -1345,13 +1358,14 @@ Ext.Extension = new Class({
 			return this;
 		}
 		
-		
+		var that		= this;
 		var tbody		= $('table').getElement('tbody');
 		var row			= $C('tr');
 		var cells;
 		var html 		= [];
+		var listeners	= [];
 		
-		row.id			= 'row-' + this.hash
+		row.id			= 'row-' + this.hash;
 		
 		if(this.ranking && this.ranking.featured) {
 			row.addClass('featured');
@@ -1366,24 +1380,36 @@ Ext.Extension = new Class({
 			
 			
 			if( diff  < (hour * (3600 * 1000)) ) {
-				versionDT = ', Today'
+				versionDT = ', Today';
 			} else 	if( ( diff > hour * (3600 * 1000) ) && ( diff < (hour + 24)  * (3600 * 1000 )) )  {
-				versionDT = ', Yesterday'
+				versionDT = ', Yesterday';
 			} else {
-				versionDT = ', ' + Math.round(diff / (86400 * 1000)) + ' days'
+				versionDT = ', ' + Math.round(diff / (86400 * 1000)) + ' days';
 			}
 			
 			// New (updated)
 			if(diff < 3600 * 1000 * 12) {
-				isNew = ' <span class="new">(NEW)</span>'
+				isNew = ' <span class="new">(NEW)</span>';
 			}			
 		}		
 		
 		if(Ext.inPopup) {
-			//html.push('<th class="cell-img"><div class=\"img\"  style="background-repeat: no-repeat; background-position: center top;background-image:'+this.img+'" title="'+this.title+' logo"></div><img src="'+this.img+'" width="20" height="20" /></th>');
-			html.push('<th class="cell-img"><div class="img"><img onclick="Ext.install(\''+this.hash+'\')" title="Click to install '+this.title+' extension" alt="" width=\"'+(Ext.options.compact ? 16 : 32)+'\" height=\"'+(Ext.options.compact ? 16 : 32)+'\" src="'+this.img+'"  /></div></th>');
+			//html.push('<th class="cell-img"><div class=\"img\"  style="background-repeat: no-repeat; background-position: center top;background-image:'+this.img+'" title="'+this.title+' logo"></div><img src="'+this.img+'" width="20" height="20"></th>');
+			html.push('<th class="cell-img"><div class="img"><img title="Click to install ' + this.title + ' extension" alt="" width=\"' + (Ext.options.compact ? 16 : 32) + '\" height=\"' + (Ext.options.compact ? 16 : 32) + '\" src="' + this.img + '"></div></th>');
+			listeners.push({
+				selector: 'th.cell-img .img img',
+				handler: function() {
+					Ext.install(that.hash);
+				}
+			});
 			
-			html.push('<th class="cell-link"><div class="link"><a onclick="return( Ext.seen(\''+this.hash+'\', event) )" '+(this.author ? 'title="By '+this.author+'"' : '') + ' href="https://chrome.google.com/webstore/detail/'+this.hash+'" target="_blank">' + this.title + '</a></div><div class="version"><a title="Edit this extension" target="_blank" href="https://chrome.google.com/webstore/developer/edit/'+ this.hash +'">edit</a> <span class="featured">FEATURED ('+(this.ranking && this.ranking.featured ? this.ranking.featured : 0) +')</span><em>V: ' + this.version + isNew + (versionDT ? '<dt>' + versionDT + '</dt>' : '')+'</em></div></th>');
+			html.push('<th class="cell-link"><div class="link"><a ' + (this.author ? 'title="By ' + this.author + '"' : '') + ' href="https://chrome.google.com/webstore/detail/' + this.hash + '" target="_blank">' + this.title + '</a></div><div class="version"><a title="Edit this extension" target="_blank" href="https://chrome.google.com/webstore/developer/edit/' + this.hash + '">edit</a> <span class="featured">FEATURED (' + (this.ranking && this.ranking.featured ? this.ranking.featured : 0) + ')</span><em>V: ' + this.version + isNew + (versionDT ? '<dt>' + versionDT + '</dt>' : '') + '</em></div></th>');
+			listeners.push({
+				selector: 'th.cell-link .link a',
+				handler: function(e) {
+					Ext.seen(that.hash, e);
+				}
+			});
 			
 			if(!Ext.options.compact) {
 				html.push('<td title="'+this.hash+'" class="ranking cell-rank-popularity">' + (this.ranking.popularity > 0 && this.ranking.popularity < 999999  ? Number((this.ranking.popularity || 0).toString().replace(/,/, '').toInt()).toFormatted(',')  : '>' + Ext.maxRank) +  '</td>');
@@ -1466,7 +1492,7 @@ Ext.Extension = new Class({
 					'comments'			: cells[6].getElement('div strong'),
 					'commentsBadge'		: cells[6].getElement('div span')
 					
-				}
+				};
 			} else {
 
 				this.elements = {
@@ -1482,7 +1508,7 @@ Ext.Extension = new Class({
 					'comments'			: cells[4].getElement('div strong'),
 					'commentsBadge'		: cells[4].getElement('div span')
 					
-				}				
+				};
 			}
 			
 			// ARG!
@@ -1491,14 +1517,24 @@ Ext.Extension = new Class({
 				
 		}
 		else {
-			var html 		= ['<th><img src="'+this.img+'" title="'+this.title+' logo" width="16" height="16" /></th>'];
-			html.push('<th><div class="link"><a '+(this.author ? 'title="By '+this.author+'"' : '') + ' target="_blank" href="https://chrome.google.com/webstore/detail/'+this.hash+'">' + this.title + '</a></th>');
+			html.push('<th><img src="' + this.img + '" title="' + this.title + ' logo" width="16" height="16"></th>');
+			html.push('<th><div class="link"><a ' + (this.author ? 'title="By ' + this.author + '"' : '') + ' target="_blank" href="https://chrome.google.com/webstore/detail/' + this.hash + '">' + this.title + '</a></th>');
 			//</div><div class="version">V: ' + this.version + (versionDT ? '<dt>' + versionDT + '</dt>' : '')+'</div></th>');
-			html.push('<td><em class="foo" onclick="Ext.remove(\''+this.hash+'\')">Remove</em></td>');
-			row.setHTML(html.join('\n')).injectIn(tbody)		 	
-		 	
+			html.push('<td><em class="foo">Remove</em></td>');
+			listeners.push({
+				selector: 'td .foo',
+				handler: function() {
+					Ext.remove(that.hash);
+				}
+			});
+
+			row.setHTML(html.join('\n'));
+			tbody.appendChild(row);
 		}
-			
+
+		for (var i = 0; i < listeners.length; i++) {
+			row.querySelector(listeners[i].selector).addEventListener(listeners[i].event || 'click', listeners[i].handler);
+		}
 
 		return this;
 	},
@@ -1507,7 +1543,7 @@ Ext.Extension = new Class({
 		Ext.getRequired(function (req) {
 			Ext.XHR['meta'] = new Ajax({
 				'method'		: 'POST',
-				'url'			: Ext.localTest ? 'http://192.168.1.200/dump.json' : 'https://chrome.google.com/webstore/ajax/detail?hl=en&pv=' + req.pv + '&mce=' + encodeURIComponent(req.mce) + '&id=' + this.hash + '&rt=j&source=igejgfmbjjjjplnnlgnbejpkpdajkblm',
+				'url'			: Ext.localTest ? 'http://localhost/dump.json' : 'https://chrome.google.com/webstore/ajax/detail?hl=en&pv=' + req.pv + '&mce=' + encodeURIComponent(req.mce) + '&id=' + this.hash + '&rt=j&source=igejgfmbjjjjplnnlgnbejpkpdajkblm',
 				'onSuccess'		: function(xhr) {
 					var response = Ext.parseJSON(xhr.responseText);
 
@@ -1652,9 +1688,9 @@ Ext.Extension = new Class({
 								"js": true,
 								"specs": [{
 									"type": "CommentThread",
-									"url": "http://chrome.google.com/extensions/permalink?id=" + this.hash,
+									"url": encodeURIComponent("http://chrome.google.com/extensions/permalink?id=" + this.hash),
 									"groups": "chrome_webstore",
-									"sortby": "lastModificationDate",
+									"sortby": "date",
 									"startindex": "0",
 									"numresults": "1",
 									"id": "1"
@@ -1664,72 +1700,74 @@ Ext.Extension = new Class({
 							 })
 			},
 			'onSuccess'		: function(xhr) {
-				var overrideMethod = 'window.google.annotations2.component.load',
-					responseText = xhr.responseText ? xhr.responseText.trim() : '',
-					that = this;
+				var data			= null;
+				var matches			= null;
+				var responseText	= xhr.responseText ? xhr.responseText.trim() : '';
 
-				function parseComments(data) {
-					var results = data['1'].results;
-					that.comments = {
-						'total' 			: Number(results.numAnnotations.toString().replace(/,/, '').toInt()),
-						'latest'			: results.annotations ? results.annotations[0] : {},
-						'previous'			: that.comments.total || null,
-						'latestPrevious' 	: $merge(that.comments.latest) || null,
-						'new'				: that.comments['new'] || false
+				if (responseText) {
+					matches = responseText.match(/({"annotations":\[[\s\S]*\],"numAnnotations":\d+,"numAnnotationsAccuracy":\d+})/i);
+
+					if (matches && matches.length > 1) {
+						data = JSON.parse(matches[1]);
+					}
+				}
+
+				if (data) {
+					this.comments = {
+						'total' 			: Number(data.numAnnotations.toString().replace(/,/, '').toInt()),
+						'latest'			: data.annotations ? data.annotations[0] : {},
+						'previous'			: this.comments.total || null,
+						'latestPrevious' 	: $merge(this.comments.latest) || null,
+						'new'				: this.comments['new'] || false
 					};
 
 					// New comment
 					// TODO: Check counter
-					if (that.comments.latest && that.comments.latest.timestamp && that.comments.latestPrevious && that.comments.latestPrevious.timestamp && (that.comments.latest.timestamp != that.comments.latestPrevious.timestamp)) {
-						that.comments['new'] = true;
+					if (this.comments.latest && this.comments.latest.timestamp && this.comments.latestPrevious && this.comments.latestPrevious.timestamp && (this.comments.latest.timestamp != this.comments.latestPrevious.timestamp)) {
+						this.comments['new'] = true;
 					}
 
 					// Extra care :)
-					//alert([that.comments.total, that.comments.previous])
-					if (that.comments.total && that.comments.previous == 0)  {
-						that.comments['new'] = true;
+					//alert([this.comments.total, this.comments.previous])
+					if (this.comments.total && this.comments.previous == 0)  {
+						this.comments['new'] = true;
 					}
 
 					// TESTING ONLY
-					// that.comments['new'] = true;
+					// this.comments['new'] = true;
 
-					that.handleComments();
+					this.handleComments();
 
-					xhr = responseText = overrideMethod = data = results = null;
+					// Nullify stuff
+					xhr = responseText = matches = data = null;
 
 					Ext.store();
 					Ext.sendRequest({
 						'action'		: 'update',
-						'instance'		: that
+						'instance'		: this
 					});
 
 					// Next step
 					//console.log((new Date().getTime() - (Ext.ranksUpdated * 1000)) / 1000);
 					if (Ext.shouldGetRatings()) {
-						that.getRanking();
+						this.getRanking();
 					}
 
 					/*
 					if (Ext.ranksUpdated) {
 						var diff = (new Date().getTime() - (Ext.ranksUpdated * 1000)) / 1000;
 						if (diff  > (3600 * 2)) {
-							that.getRanking();	
+							this.getRanking();	
 						} else {
 							 //console.log('skipping');
 						}
 					} else {
-						that.getRanking();
+						this.getRanking();
 					}
 					*/
-
-					Ext.XHR['comments'] = null;
 				}
 
-				// eval is evil! But response can contain JavaScript, not just JSON
-				if (responseText && responseText.indexOf(overrideMethod) === 0) {
-					responseText = responseText.replace(overrideMethod, 'parseComments');
-					eval(responseText);
-				}
+				Ext.XHR['comments'] = null;
 			}.bind(this)	
 		}).send();		
 		
@@ -1910,7 +1948,7 @@ Ext.Extension = new Class({
 	getCommentsHTML : function() {
 		if(this.comments && this.comments.latest && this.comments.latest.entity) {
 			var html = ['<div style="max-height: '+ (document.body.offsetHeight -10) + 'px;overflow: auto;"><strong>Latest review from: ' + (this.comments.latest.entity.nickname || 'Anonymous')+'</strong>'];
-			html.push('<p>'+(this.comments.latest && this.comments.latest.comment ? this.comments.latest.comment.replace(/\n/gi, '<br />')  : 'N/A') + '</p></div>');
+			html.push('<p>'+(this.comments.latest && this.comments.latest.comment ? this.comments.latest.comment.replace(/\n/gi, '<br>')  : 'N/A') + '</p></div>');
 		
 			return html.join('');
 		} else {
@@ -2049,7 +2087,7 @@ Ext.Extension = new Class({
 					}
 
 					
-					var scope = eval(type);
+					var scope = JSON.parse(type);
 					
 					source.graph = new Graph([], source.graphElement);		
 					
