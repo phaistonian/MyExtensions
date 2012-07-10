@@ -1778,7 +1778,7 @@ Ext.Extension = new Class({
 		Ext.XHR['ranking'] = new Ajax({
 			'method'		: 'get',
 			'encodeURI'		: false,	// Needed
-			'url'			: 'https://chrome.pathfinder.gr/My/getranking.php?id=' + this.hash + '&source=igejgfmbjjjjplnnlgnbejpkpdajkblm',
+			'url'			: 'http://chrome.pathfinder.gr/My/getranking.php?id=' + this.hash + '&source=igejgfmbjjjjplnnlgnbejpkpdajkblm',
 			'onSuccess'		: function(xhr) {
 				var json = xhr.responseJSON;
 				if(json && json.total) {
@@ -2004,7 +2004,7 @@ Ext.Extension = new Class({
 			}
 		} else {		
 			new Ajax({
-				'url'		: 'https://chrome.pathfinder.gr/My/getdata.php?id=' + this.hash + '&source=igejgfmbjjjjplnnlgnbejpkpdajkblm',
+				'url'		: 'http://chrome.pathfinder.gr/My/getdata.php?id=' + this.hash + '&source=igejgfmbjjjjplnnlgnbejpkpdajkblm',
 				'method'  	: 'get',
 				'onSuccess' : function(xhr) {
 					self.graphData = {
