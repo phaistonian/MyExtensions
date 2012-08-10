@@ -1,7 +1,8 @@
+
 <!DOCTYPE html>
 <html>
 <head>
-	<title>MyExtensions (work in progress)</title>
+	<title>Work in progress</title>
 	<meta charset="utf-8" />
 	<style>
 	html, body {
@@ -34,8 +35,16 @@
 		font: normal 7vmin "Helvetica Neue", helvetica, serif;
 		color: #666;
 	}
-
 	</style>
+
+	<script>
+	// Stupid bug :(
+	window.addEventListener('resize', function (event) {
+		Array.prototype.slice.call(document.querySelectorAll('h1, h2')).forEach(function (item) {
+			item.style.zIndex = 1;
+		});
+	});
+	</script>
 </head>
 
 <body>
@@ -50,8 +59,4 @@
 
 </body>
 
-<<<<<<< HEAD
 </html>
-=======
-</html>
->>>>>>> df26d0b27e04c151cb02af284ab529a823e6e9ac
