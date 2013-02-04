@@ -927,7 +927,7 @@ Ext = {
 		this.getRequired(function (req) {
 			Ext.XHR['find'] = new Ajax({
 				'method'	: 'POST',
-				'url'		: 'https://chrome.google.com/webstore/ajax/item?hl=en&pv=' + req.pv + '&count=61&searchTerm=' + encodeURIComponent(username) + '&source=igejgfmbjjjjplnnlgnbejpkpdajkblm',
+				'url'		: 'https://chrome.google.com/webstore/ajax/item?hl=en&category=extensions&pv=' + req.pv + '&count=61&searchTerm=' + encodeURIComponent(username) + '&source=igejgfmbjjjjplnnlgnbejpkpdajkblm',
 				'onSuccess' : function(xhr) {
 					var response = Ext.parseJSON(xhr.responseText);
 
