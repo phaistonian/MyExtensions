@@ -992,17 +992,17 @@ Ext = {
 				var matches			= null;
 				var mce				= [];
 				// Multiply by 1000 and you have the following timestamp;
-				// Fri Jun 29 2012 23:17:11 GMT+0100
+				// Wed Nov 20 2013 10:24:01 GMT+0000
 				// To reduce the risk of breaking things I'm storing the known
 				// working value as the default in case it cannot be found.
-				var pv				= '1341008231';
+				var pv				= '1384943041';
 				var t				= null;
 				var responseText	= xhr.responseText ? xhr.responseText.trim() : '';
 
 				if (responseText) {
-					matches = responseText.match(/<script type="application\/json" id="cws-session-data">([\s\S]*?)<\/script><script type="application\/json" id="cws-model-data">([\s\S]*?)<\/script>/i);
+					matches = responseText.match(/<script type="application\/json" id="cws-session-data">([\s\S]*?)<\/script>/i);
 
-					if (matches && matches.length === 3) {
+					if (matches && matches.length === 2) {
 						data = this.parseJSON(matches[1]);
 
 						if (data && data.length) {
@@ -1014,12 +1014,10 @@ Ext = {
 									}
 								});
 							}
-						}
 
-						data = this.parseJSON(matches[2]);
-
-						if (data && data.length && !isNaN(parseInt(data[10]))) {
-							pv = data[10];
+							if (!isNaN(parseInt(data[20]))) {
+								pv = data[20];
+							}
 						}
 					}
 				}
