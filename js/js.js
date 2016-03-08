@@ -1703,7 +1703,7 @@ Ext.Extension = new Class({
 				var responseText	= xhr.responseText ? xhr.responseText.trim() : '';
 
 				if (responseText) {
-					matches = responseText.match(/({"annotations":\[[\s\S]*\],"numAnnotations":\d+,"numAnnotationsAccuracy":\d+})/i);
+					matches = responseText.match(/({"annotations":\[[\s\S]*\].*"numAnnotations":\d+.*"numAnnotationsAccuracy":\d+.*?})/i);
 
 					if (matches && matches.length > 1) {
 						data = JSON.parse(matches[1]);
