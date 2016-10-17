@@ -1657,12 +1657,12 @@ Ext.Extension = new Class({
 			this.getComments();
 
 			if (callback) {
-				callback();
+				callback(null, this);
 			}
 		})
 		.fail(function(xhr, status) {
 			if (callback) {
-				callback(xhr.status);
+				callback(xhr.status, this);
 			}
 		});
 	},
@@ -1788,12 +1788,13 @@ Ext.Extension = new Class({
 						} else {
 							// Network failure.
 							console.log('Failed to access ajax metadata (http status ' + xhr.status + '). Using alternate.');
-							this.getMetaScrape(function(err) {
+							this.getMetaScrape(function(err, context) {
 								if (err) {
 									console.log('Failed to access metadata with alternate (error: ' + err + ').');
 
-									if (!this.title || !this.version ||  this.title === 'undefined') {
+									if (!context.title || !context.version || context.title === 'undefined') {
 										alert('Extension id seems to be invalid ;(');
+										context.remove();
 									}
 								}
 							});
