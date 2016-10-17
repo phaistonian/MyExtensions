@@ -1,3 +1,5 @@
+var	$j = jQuery.noConflict();
+
 Ext = {
 	//interval	: ( 5 * 60 ) * 1000, 	// Update interval 5 mins
 	extensions	: {},
@@ -1537,6 +1539,134 @@ Ext.Extension = new Class({
 		return this;
 	},
 
+	getMetaScrape: function(callback) {
+		var url = 'https://chrome.google.com/webstore/detail/' + this.title + '/' + this.hash;			
+		$j.ajax({
+			url: url,
+			method: 'GET',
+			context: this
+		}).done(function(html) {
+			if (!html || html.indexOf('e-f-ih') == -1 || html.indexOf('e-f-y') == -1 || html.indexOf(' users') == -1 || html.indexOf('itemprop="version"') == -1 || html.indexOf('itemprop="name"') == -1) {
+				if (Ext.inOptions) {
+					alert('Unable to retrieve data. Please try again later.');
+				}
+
+				this.remove();
+				return this;
+			}
+
+			var doc = $j($j.parseHTML(html));
+			var total = parseInt(doc.find('span.e-f-ih').text().replace(' users', '').replace(/\,/g, ''));
+			var version = doc.find("meta[itemprop='version']").attr('content');
+			var title = doc.find("meta[itemprop='name']").attr('content');
+			var ratingCount = parseInt(doc.find("meta[itemprop='ratingCount']").attr('content').replace(/\,/g, ''));
+			var ratingValue = parseFloat(doc.find("meta[itemprop='ratingValue']").attr('content').replace(/\,/g, ''));
+			var author = doc.find('.e-f-Me').text().replace('offered by ', '');
+			var icon = doc.find("img[alt='Extension']").attr('src');
+
+			this.img = icon;
+
+			if (this.img.indexOf('url(/extensions') !== -1) {
+				this.img = this.img.replace(/url\(\/extensions/, 'url(https://chrome.google.com/extensions');
+			}
+
+			this.title = title;
+			this.author = author;
+			this.author = this.author.trim().replace(/\)$/, '');
+
+			// CHANGED: 16.01.2010
+			// Those changes are mae in order to support down/up references.
+			var currentTotal = this.users.total;
+
+			if (Ext.localTest) {
+				console.log(this.title);
+				console.log(this.author);
+				console.log(response[1][4]);
+				console.log(this.img);
+				return;
+			}
+
+			this.users = this.users || {};
+			this.users.total = total;
+
+			if (parseInt(currentTotal) === parseInt(this.users.total)) {
+				this.users.previous = this.users.previous || null;
+			} else {
+				this.users.previous = currentTotal;
+				// We are going to need this later
+				this.metaUpdated = new Date().getTime();
+			}
+
+			if (0) {
+				console.log('USERS REPORT');
+				console.log('TOTAL: ' + this.users.total);
+				console.log('PREVIOUS: ' + this.users.previous);
+			}
+
+			this.version = version;
+
+			var currentAverage = this.ratings.average;
+
+			// Update ratings
+			this.ratings = this.ratings || {};
+			this.ratings.average	= ratingValue;
+			this.ratings.total		= ratingCount;
+			this.ratings.stars		= this.ratings.stars || 0;
+			this.ratings.previous	= this.ratings.total || null;
+			this.ratings['new']		= this.ratings['new'] || false;
+
+			if (currentAverage === this.ratings.average) {
+				this.ratings.previousAverage = this.ratings.previousAverage || null;
+			} else {
+				this.ratings.previousAverage = currentAverage;
+			}
+
+			// Extra care :)
+			if (this.ratings.total && this.ratings.previous === 0) {
+				this.ratings['new'] = true;
+			}
+
+			// New rating
+			if (this.ratings.total && this.ratings.previous && (this.ratings.total !== this.ratings.previous)) {
+				this.ratings['new'] = true;
+			}
+
+			this.handleRatings();
+
+			Ext.store();
+
+			Ext.sendRequest({
+				'action': 'update',
+				'instance': this
+			});
+
+			if (Ext.inOptions) {
+				this.update();
+			}
+
+			if (Ext.localTest) {
+				console.log(this.users);
+				console.log('done local test');
+				throw (1);
+				return this;
+			}
+
+			// Nullify stuff
+			currentTotal = currentAverage = null;
+			// Next step
+			this.getComments();
+
+			if (callback) {
+				callback();
+			}
+		})
+		.fail(function(xhr, status) {
+			if (callback) {
+				callback(xhr.status);
+			}
+		});
+	},
+
 	getMeta		: function () {
 		Ext.getRequired(function (req) {
 			Ext.XHR['meta'] = new Ajax({
@@ -1652,11 +1782,21 @@ Ext.Extension = new Class({
 						this.getComments();
 					} else {
 						// If we have a title already, its just a network issue
-						if (!this.title || !this.version ||  this.title === 'undefined') {
+						if (xhr.status != 400 && (!this.title || !this.version ||  this.title === 'undefined')) {
 							alert('Extension id seems to be invalid ;(');
 							this.remove();
 						} else {
-							// Network failure
+							// Network failure.
+							console.log('Failed to access ajax metadata (http status ' + xhr.status + '). Using alternate.');
+							this.getMetaScrape(function(err) {
+								if (err) {
+									console.log('Failed to access metadata with alternate (error: ' + err + ').');
+
+									if (!this.title || !this.version ||  this.title === 'undefined') {
+										alert('Extension id seems to be invalid ;(');
+									}
+								}
+							});
 						}
 					}
 
