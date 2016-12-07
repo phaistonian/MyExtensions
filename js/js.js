@@ -988,7 +988,7 @@ Ext = {
 	getRequired	: function (callback, context) {
 		Ext.XHR['required'] = new Ajax({
 			'method'	: 'GET',
-			'url'		: 'https://chrome.google.com/webstore/category/home?source=igejgfmbjjjjplnnlgnbejpkpdajkblm',
+            'url'		: 'https://chrome.google.com/webstore/category/home?source=igejgfmbjjjjplnnlgnbejpkpdajkblm&hl=en',
 			'onSuccess'	: function (xhr) {
 				var data			= null;
 				var matches			= null;
@@ -1002,10 +1002,10 @@ Ext = {
 				var responseText	= xhr.responseText ? xhr.responseText.trim() : '';
 
 				if (responseText) {
-					matches = responseText.match(/<script type="application\/json" id="cws-session-data">([\s\S]*?)<\/script>/i);
+                    matches = responseText.match(/<script type="application\/json" id="cws-session-data"([\s\S]*?)>([\s\S]*?)<\/script>/i);
 
-					if (matches && matches.length === 2) {
-						data = this.parseJSON(matches[1]);
+					if (matches && matches.length === 3) {
+						data = this.parseJSON(matches[2]);
 
 						if (data && data.length) {
 							if ('string' === typeof data[10]) t = data[10];
@@ -1540,7 +1540,7 @@ Ext.Extension = new Class({
 	},
 
 	getMetaScrape: function(callback) {
-		var url = 'https://chrome.google.com/webstore/detail/' + this.title + '/' + this.hash;			
+        var url = 'https://chrome.google.com/webstore/detail/' + this.title + '/' + this.hash + '&hl=en';			
 		$j.ajax({
 			url: url,
 			method: 'GET',
